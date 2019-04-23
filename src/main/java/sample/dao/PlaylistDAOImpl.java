@@ -71,17 +71,23 @@ public class PlaylistDAOImpl implements PlaylistDAO {
     }
 
     @Override
+    public void createItem(String path, String name, String title, String artist, String album, int year, String genre, Playlist playlist) {
+        em.getTransaction().begin();
+        Item item = new Item(path, name, title, artist, album, year, genre, playlist);
+        em.persist(item);
+        em.getTransaction().commit();
+    }
+
+    @Override
     public List<Item> getItemsByPlaylist(Playlist playlist) {
         TypedQuery<Item> query = em.createQuery("select i from Item i where " + playlist.getId() + " = i.playlist.id", Item.class);
         return query.getResultList();
     }
 
     @Override
-    public void createItem(String name, String path, Playlist playlist) {
-        em.getTransaction().begin();
-        Item item = new Item(name, path, playlist);
-        em.persist(item);
-        em.getTransaction().commit();
+    public Item getItemByPath(Playlist playlist, String path) {
+        TypedQuery<Item> query = em.createQuery("select i from Item i where " + playlist.getId() + " = i.playlist.id and i.path = '" + path + "'", Item.class);
+        return query.getResultList().get(0);
     }
 
     @Override

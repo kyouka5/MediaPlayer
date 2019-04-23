@@ -1,11 +1,7 @@
 package sample.model;
 
 import javax.persistence.*;
-import javax.xml.bind.annotation.XmlRootElement;
-import javax.xml.bind.annotation.XmlType;
 
-//@XmlRootElement(name = "item")
-//@XmlType(propOrder = {"name", "path"})
 @Entity
 public class Item {
 
@@ -13,17 +9,24 @@ public class Item {
 
     private String path;
     private String name;
-
-//    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-//    @JoinColumn(name = "playlist_id", insertable = false, updatable = false)
+    private String title;
+    private String artist;
+    private String album;
+    private int year;
+    private String genre;
     private Playlist playlist;
 
     public Item() {
     }
 
-    public Item(String path, String name, Playlist playlist) {
+    public Item(String path, String name, String title, String artist, String album, int year, String genre, Playlist playlist) {
         this.path = path;
         this.name = name;
+        this.title = title;
+        this.artist = artist;
+        this.album = album;
+        this.year = year;
+        this.genre = genre;
         this.playlist = playlist;
     }
 
@@ -63,4 +66,45 @@ public class Item {
     public void setPlaylist(Playlist playlist) {
         this.playlist = playlist;
     }
+
+    public String getTitle() {
+        return title;
+    }
+
+    public void setTitle(String title) {
+        this.title = title;
+    }
+
+    public String getArtist() {
+        return artist;
+    }
+
+    public void setArtist(String artist) {
+        this.artist = artist;
+    }
+
+    public String getAlbum() {
+        return album;
+    }
+
+    public void setAlbum(String album) {
+        this.album = album;
+    }
+
+    public int getYear() {
+        return year;
+    }
+
+    public void setYear(int year) {
+        this.year = year;
+    }
+
+    public String getGenre() {
+        return genre;
+    }
+
+    public void setGenre(String genre) {
+        this.genre = genre;
+    }
+
 }

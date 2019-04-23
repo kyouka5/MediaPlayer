@@ -120,7 +120,7 @@
    <center>
       <StackPane BorderPane.alignment="CENTER">
          <children>
-            <ImageView fx:id="albumCover" fitHeight="400.0" fitWidth="400.0" pickOnBounds="true" preserveRatio="true" />
+            <ImageView fx:id="albumCover" fitHeight="300.0" fitWidth="300.0" pickOnBounds="true" preserveRatio="true" />
             <MediaView fx:id="mediaView" fitHeight="400.0" fitWidth="800.0" />
          </children>
       </StackPane>

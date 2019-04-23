@@ -103,7 +103,19 @@
             <artifactId>mysql-connector-java</artifactId>
             <version>5.1.10</version>
         </dependency>
+        <dependency>
+            <groupId>net.jthink</groupId>
+            <artifactId>jaudiotagger</artifactId>
+            <version>2.2.5</version>
+        </dependency>
     </dependencies>
+
+    <repositories>
+        <repository>
+            <id>jaudiotagger-repository</id>
+            <url>https://dl.bintray.com/ijabz/maven</url>
+        </repository>
+    </repositories>
 
     <build>
         <plugins>
@@ -160,6 +172,7 @@
                 </plugin>
         </plugins>
     </build>
+
 
     <reporting>
         <plugins>

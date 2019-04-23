@@ -8,6 +8,7 @@ import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 
 import java.io.File;
+import java.io.IOException;
 import java.net.URL;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -18,6 +19,15 @@ import javafx.scene.control.ListView;
 import javafx.scene.control.TextField;
 import javafx.scene.input.MouseEvent;
 import javafx.stage.FileChooser;
+import org.jaudiotagger.audio.AudioFile;
+import org.jaudiotagger.audio.AudioFileIO;
+import org.jaudiotagger.audio.AudioHeader;
+import org.jaudiotagger.audio.exceptions.CannotReadException;
+import org.jaudiotagger.audio.exceptions.InvalidAudioFrameException;
+import org.jaudiotagger.audio.exceptions.ReadOnlyFileException;
+import org.jaudiotagger.tag.FieldKey;
+import org.jaudiotagger.tag.Tag;
+import org.jaudiotagger.tag.TagException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import sample.dao.PlaylistDAO;
@@ -157,9 +167,31 @@ public class PlaylistController implements Initializable {
             if (listOfFiles != null) {
                 logger.info("New media has been ADDED to the playlist");
                 for(int i=0; i< listOfFiles.size(); i++){
-                    playlistDAO.createItem(listOfFiles.stream().map(e -> e.toURI().toString()).collect(Collectors.toList()).get(i),
-                            listOfFiles.stream().map(File::getName).collect(Collectors.toList()).get(i),
-                            playlistDAO.readPlaylistByName(listViewPlaylist.getSelectionModel().getSelectedItem()));
+                    if (listOfFiles.get(i).getName().endsWith("mp3")) {
+                        try {
+                            AudioFile audioFile = AudioFileIO.read(listOfFiles.get(i));
+                            Tag tag = audioFile.getTag();
+                            playlistDAO.createItem(listOfFiles.stream().map(e -> e.toURI().toString()).collect(Collectors.toList()).get(i),
+                                    listOfFiles.stream().map(File::getName).collect(Collectors.toList()).get(i),
+                                    tag.getFirst(FieldKey.TITLE),
+                                    tag.getFirst(FieldKey.ARTIST),
+                                    tag.getFirst(FieldKey.ALBUM),
+                                    Integer.parseInt(tag.getFirst(FieldKey.YEAR)),
+                                    tag.getFirst(FieldKey.GENRE),
+                                    playlistDAO.readPlaylistByName(listViewPlaylist.getSelectionModel().getSelectedItem()));
+                        } catch (CannotReadException | ReadOnlyFileException | InvalidAudioFrameException | TagException | IOException e) {
+                            e.printStackTrace();
+                        }
+                    } else {
+                        playlistDAO.createItem(listOfFiles.stream().map(e -> e.toURI().toString()).collect(Collectors.toList()).get(i),
+                                listOfFiles.stream().map(File::getName).collect(Collectors.toList()).get(i),
+                                null,
+                                null,
+                                null,
+                                0,
+                                null,
+                                playlistDAO.readPlaylistByName(listViewPlaylist.getSelectionModel().getSelectedItem()));
+                    }
                 }
                 playlistDAO.updatePlaylistContents(playlistDAO.readPlaylistByName(listViewPlaylist.getSelectionModel().getSelectedItem()),
                         playlistDAO.getItemsByPlaylist(playlistDAO.readPlaylistByName(listViewPlaylist.getSelectionModel().getSelectedItem())));

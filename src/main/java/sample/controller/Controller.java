@@ -385,27 +385,9 @@ public class Controller implements Initializable {
         }
         Media media = new Media(path);
         mediaPlayer = new MediaPlayer(media);
-        metadataInTitle = "";
-        mediaPlayer.getMedia().getMetadata().addListener(new MapChangeListener<String, Object>(){
-            @Override
-            public void onChanged(Change<? extends String, ?> change) {
-                if(change.wasAdded()){
-                    if(change.getKey().equals("artist"))
-                        metadataInTitle += change.getValueAdded().toString();
-                    else if(change.getKey().equals("title")) {
-                        metadataInTitle += " > " + change.getValueAdded().toString();
-                        metadata.setText(change.getValueAdded().toString());
-                    }
-                    else if(change.getKey().equals("year"))
-                        metadataInTitle += " > " + change.getValueAdded().toString();
-                    else if(change.getKey().equals("album"))
-                        metadataInTitle += " > " + change.getValueAdded().toString();
-                    else if(change.getKey().equals("image"))
-                        albumCover.setImage((Image)change.getValueAdded());
-                    stage.setTitle(metadataInTitle);
-                }
-            }
-        });
+        Item item = playlistDAO.getItemByPath(playlistDAO.readPlaylistByName(selectedPlaylistName.getValue()), path);
+        stage.setTitle(item.getArtist() + " < " + item.getYear() + " < " + item.getAlbum() + " < " + item.getTitle());
+        metadata.setText(item.getTitle());
         mediaView.setMediaPlayer(mediaPlayer);
         bindControls(mediaPlayer);
         mediaPlayer.play();

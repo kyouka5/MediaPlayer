@@ -19,9 +19,11 @@ public interface PlaylistDAO {
 
     public List<String> getPlaylistNames();
 
-    public void createItem(String name, String path, Playlist playlist);
+    public void createItem(String path, String name, String title, String artist, String album, int year, String genre, Playlist playlist);
 
     public List<Item> getItemsByPlaylist(Playlist playlist);
+
+    public Item getItemByPath(Playlist playlist, String path);
 
     public void removeItemFromPlaylistByName(Playlist playlist, String name);
 
