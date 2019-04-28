@@ -9,8 +9,12 @@ import javafx.fxml.Initializable;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URI;
 import java.net.URL;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.*;
+import java.util.logging.Level;
 import java.util.stream.Collectors;
 
 import javafx.scene.Node;
@@ -21,7 +25,6 @@ import javafx.scene.input.MouseEvent;
 import javafx.stage.FileChooser;
 import org.jaudiotagger.audio.AudioFile;
 import org.jaudiotagger.audio.AudioFileIO;
-import org.jaudiotagger.audio.AudioHeader;
 import org.jaudiotagger.audio.exceptions.CannotReadException;
 import org.jaudiotagger.audio.exceptions.InvalidAudioFrameException;
 import org.jaudiotagger.audio.exceptions.ReadOnlyFileException;
@@ -55,10 +58,6 @@ public class PlaylistController implements Initializable {
         return selectedMedia;
     }
 
-    public ObjectProperty<Integer> selectedIndex() {
-        return selectedIndex;
-    }
-
     public ObjectProperty<String> selectedPlaylistName() {
         return selectedPlaylistName;
     }
@@ -85,6 +84,36 @@ public class PlaylistController implements Initializable {
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         playlistDAO = PlaylistDAOFactory.getInstance().createPlaylistDAO();
+
+        List<String> pathsNotFound = new ArrayList<>();
+
+        for (int i = 0; i < playlistDAO.getAllPaths().size(); i++) {
+            URI uriOfPath = URI.create(playlistDAO.getAllPaths().get(i));
+            String uriPathToString = Paths.get(uriOfPath).toString();
+            Path path = Paths.get(uriPathToString);
+            if (!path.toFile().exists()) {
+                pathsNotFound.add(playlistDAO.getAllPaths().get(i));
+            }
+        }
+
+        if (!pathsNotFound.isEmpty()) {
+            for (int i = 0; i < pathsNotFound.size(); i ++) {
+                playlistDAO.removeItemByPath(pathsNotFound.get(i));
+            }
+
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setTitle("Error");
+            alert.setHeaderText("Some files were not found");
+            alert.setContentText("Some files are missing, hence they got removed from the database. \n");
+            alert.showAndWait();
+        }
+
+        //        for (int i = 0; i< playlistDAO.getPlaylistNames().size(); i++) {
+//            if (playlistDAO.readPlaylistByName(playlistDAO.getPlaylistNames().get(i)).getContents().isEmpty()) {
+//                playlistDAO.removePlaylist(playlistDAO.readPlaylistByName(playlistDAO.getPlaylistNames().get(i)));
+//            }
+//        }
+
         loadPlaylists();
     }
 
@@ -169,6 +198,7 @@ public class PlaylistController implements Initializable {
                 for(int i=0; i< listOfFiles.size(); i++){
                     if (listOfFiles.get(i).getName().endsWith("mp3")) {
                         try {
+                            java.util.logging.Logger.getLogger("org.jaudiotagger").setLevel(Level.OFF);
                             AudioFile audioFile = AudioFileIO.read(listOfFiles.get(i));
                             Tag tag = audioFile.getTag();
                             playlistDAO.createItem(listOfFiles.stream().map(e -> e.toURI().toString()).collect(Collectors.toList()).get(i),
@@ -176,7 +206,7 @@ public class PlaylistController implements Initializable {
                                     tag.getFirst(FieldKey.TITLE),
                                     tag.getFirst(FieldKey.ARTIST),
                                     tag.getFirst(FieldKey.ALBUM),
-                                    Integer.parseInt(tag.getFirst(FieldKey.YEAR)),
+                                    tag.getFirst(FieldKey.YEAR).isEmpty() ? 0 : Integer.parseInt(tag.getFirst(FieldKey.YEAR)),
                                     tag.getFirst(FieldKey.GENRE),
                                     playlistDAO.readPlaylistByName(listViewPlaylist.getSelectionModel().getSelectedItem()));
                         } catch (CannotReadException | ReadOnlyFileException | InvalidAudioFrameException | TagException | IOException e) {
@@ -238,7 +268,7 @@ public class PlaylistController implements Initializable {
                     logger.info("SELECTED " + listViewItem.getSelectionModel().getSelectedItem() + " from the playlist");
                     List<Item> itemsOfSelectedPlaylist = playlistDAO.getItemsByPlaylist(playlist);
                     String selectedItemName = itemsOfSelectedPlaylist.stream().filter(e -> e.getName().equals(listViewItem.getSelectionModel().getSelectedItem()))
-                            .map(Item::getPath).collect(Collectors.joining());
+                            .map(Item::getPath).findFirst().orElse(null);
                     selectedMedia.setValue(selectedItemName);
                     selectedIndex.setValue(listViewItem.getSelectionModel().getSelectedIndex());
                 }

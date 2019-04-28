@@ -75,11 +75,23 @@
                         </ImageView>
                      </graphic></Button>
                   <Separator prefWidth="50.0" visible="false" />
-                  <ToggleButton contentDisplay="GRAPHIC_ONLY" mnemonicParsing="false" onAction="#repeat" style="-fx-background-radius: 20;" text="Repeat">
+                  <ToggleButton fx:id="repeatToggle" contentDisplay="GRAPHIC_ONLY" mnemonicParsing="false" onAction="#repeat" style="-fx-background-radius: 20;" text="Repeat">
                      <graphic>
                         <ImageView fitWidth="15.0" pickOnBounds="true" preserveRatio="true">
                            <image>
                               <Image url="@../style/repeat.png" />
+                           </image>
+                        </ImageView>
+                     </graphic>
+                     <tooltip>
+                        <Tooltip text="Toggle repeat" />
+                     </tooltip>
+                  </ToggleButton>
+                  <ToggleButton fx:id="shuffleToggle" contentDisplay="GRAPHIC_ONLY" mnemonicParsing="false" onAction="#shuffle" style="-fx-background-radius: 20;" text="Shuffle">
+                     <graphic>
+                        <ImageView fitWidth="15.0" pickOnBounds="true" preserveRatio="true">
+                           <image>
+                              <Image url="@../style/shuffle.png" />
                            </image>
                         </ImageView>
                      </graphic>

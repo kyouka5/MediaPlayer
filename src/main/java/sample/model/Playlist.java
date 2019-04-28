@@ -1,31 +1,24 @@
 package sample.model;
 
 import javax.persistence.*;
-import javax.xml.bind.annotation.*;
-import java.util.List;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
+import java.util.*;
 
-//@XmlRootElement(name = "playlist")
-//@XmlType(propOrder = {"name", "contents"})
 @Entity
 public class Playlist {
 
-//    @Column(name = "playlist_pk")
+    @Id
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    @Column(name = "id")
     private int id;
 
-
+    @Column(length = 50, unique = true)
     private String name;
 
-//    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
-//    @JoinColumn(name = "playlist_id")
-//@OneToMany(
-//        mappedBy = "playlist",
-//        cascade = CascadeType.ALL,
-//        orphanRemoval = true
-//)
+    @OneToMany(fetch = FetchType.EAGER, mappedBy = "playlist", orphanRemoval=true)
     private List<Item> contents;
 
+    @Transient
+    private int currentIndex;
 
     public Playlist() {
     }
@@ -35,9 +28,6 @@ public class Playlist {
         this.contents = contents;
     }
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
-    @Column(name = "id")
     public int getId() {
         return id;
     }
@@ -46,7 +36,6 @@ public class Playlist {
         this.id = id;
     }
 
-    @Column(length = 50, unique = true)
     public String getName() {
         return name;
     }
@@ -55,24 +44,50 @@ public class Playlist {
         this.name = name;
     }
 
-    @OneToMany(fetch = FetchType.EAGER, mappedBy = "playlist", orphanRemoval=true)
     public List<Item> getContents() {
         return contents;
     }
 
-//    @XmlElementWrapper(name = "contents")
-//    @XmlElement(name = "item")
     public void setContents(List<Item> contents) {
         this.contents = contents;
     }
 
+    public int getCurrentIndex() {
+        return currentIndex;
+    }
 
-    public void addContent(List<Item> contents) {
-        if (getContents() == null) {
-            setContents(contents);
+    public void setCurrentIndex(int currentIndex) {
+        this.currentIndex = currentIndex;
+    }
+
+    public Item getNextItem(Item currentlyPlaying) {
+        currentIndex = contents.indexOf(currentlyPlaying);
+        if (currentIndex < contents.size() - 1) {
+            return contents.get(currentIndex + 1);
         } else {
-            setContents(Stream.concat(getContents().stream(), contents.stream()).collect(Collectors.toList()));
+            return null;
         }
+    }
+
+    public Item getPreviousItem(Item currentlyPlaying) {
+        currentIndex = contents.indexOf(currentlyPlaying);
+        if (currentIndex > 0) {
+            return contents.get(currentIndex - 1);
+        } else {
+            return null;
+        }
+    }
+
+    public Item getItemByPath(String path) {
+        return contents.stream().filter(e -> e.getPath().equals(path)).findFirst().orElse(null);
+    }
+
+    public void shufflePlaylist() {
+        Collections.shuffle(contents);
+    }
+
+    public void unshufflePlaylist() {
+        Collections.sort(contents, Comparator.comparingInt(Item::getId));
     }
 
 }

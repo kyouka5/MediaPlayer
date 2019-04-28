@@ -98,4 +98,18 @@ public class PlaylistDAOImpl implements PlaylistDAO {
         em.getTransaction().commit();
     }
 
+    @Override
+    public List<String> getAllPaths() {
+        TypedQuery<String> query = em.createQuery("select i.path from Item i", String.class);
+        return query.getResultList();
+    }
+
+    @Override
+    public void removeItemByPath(String path) {
+        em.getTransaction().begin();
+        TypedQuery<Item> query = em.createQuery("select i from Item i where i.path ='" + path + "'", Item.class);
+        em.remove(query.getResultList().get(0));
+        em.getTransaction().commit();
+    }
+
 }

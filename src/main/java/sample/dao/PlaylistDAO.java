@@ -27,4 +27,8 @@ public interface PlaylistDAO {
 
     public void removeItemFromPlaylistByName(Playlist playlist, String name);
 
+    public List<String> getAllPaths();
+
+    public void removeItemByPath(String path);
+
 }

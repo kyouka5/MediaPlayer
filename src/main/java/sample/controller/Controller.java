@@ -19,6 +19,7 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.ListView;
 import javafx.scene.control.Slider;
+import javafx.scene.control.ToggleButton;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
@@ -38,6 +39,7 @@ import sample.model.Playlist;
 import sample.utils.TimeUtil;
 
 import javax.swing.*;
+import java.awt.event.MouseListener;
 import java.net.URL;
 import java.util.Collections;
 import java.util.List;
@@ -82,7 +84,11 @@ public class Controller implements Initializable {
     @FXML
     private Text metadata;
 
-    private String metadataInTitle;
+    @FXML
+    ToggleButton repeatToggle;
+
+    @FXML
+    ToggleButton shuffleToggle;
 
     public void setStage(Stage stage) {
         this.stage = stage;
@@ -101,10 +107,7 @@ public class Controller implements Initializable {
     }
 
     private ObjectProperty<String> selectedMedia = new SimpleObjectProperty<>();
-    private ObjectProperty<Integer> selectedIndex = new SimpleObjectProperty<>();
     private ObjectProperty<String> selectedPlaylistName = new SimpleObjectProperty<>();
-
-    private boolean repeat = false;
 
     private PlaylistDAO playlistDAO;
 
@@ -203,10 +206,11 @@ public class Controller implements Initializable {
             @Override
             public void run() {
                 if (!mediaPlayer.getStatus().equals(MediaPlayer.Status.PAUSED)) {
-                    if (repeat) {
+                    if (repeatToggle.isSelected()) {
                         mediaPlayer.seek(Duration.ZERO);
                         mediaPlayer.play();
-                    } else {
+                    }
+                    else {
                         playNextVideo();
                     }
                 }
@@ -279,12 +283,11 @@ public class Controller implements Initializable {
     @FXML
     private void previousVideo(javafx.event.ActionEvent event) {
         if (mediaPlayer != null) {
-            if (selectedIndex.get() != 0) {
+            Playlist playlist = playlistDAO.readPlaylistByName(selectedPlaylistName.getValue());
+            Item previousItem = playlist.getPreviousItem(playlist.getItemByPath(selectedMedia.getValue()));
+            if (previousItem != null) {
                 logger.info("Started the PREVIOUS media on the list");
-                int previousIndex = selectedIndex.get() - 1;
-                selectedIndex.set(previousIndex);
-                selectedMedia.set(playlistDAO.getItemsByPlaylist(playlistDAO.readPlaylistByName(selectedPlaylistName.getValue()))
-                        .stream().map(Item::getPath).collect(Collectors.toList()).get(previousIndex));
+                selectedMedia.set(previousItem.getPath());
             } else {
                 logger.info("This is the FIRST media on the playlist, hence it is not possible to get the previous one");
             }
@@ -303,45 +306,32 @@ public class Controller implements Initializable {
     }
 
     private void playNextVideo() {
-        if (selectedIndex.get() != playlistDAO.getItemsByPlaylist(playlistDAO.readPlaylistByName(selectedPlaylistName.getValue())).size() - 1) {
+        Playlist playlist = playlistDAO.readPlaylistByName(selectedPlaylistName.getValue());
+        Item nextItem = playlist.getNextItem(playlist.getItemByPath(selectedMedia.getValue()));
+        if (nextItem != null) {
             logger.info("Started the NEXT media on the list");
-            int nextIndex = selectedIndex.get() + 1;
-            selectedIndex.set(nextIndex);
-            selectedMedia.set(playlistDAO.getItemsByPlaylist(playlistDAO.readPlaylistByName(selectedPlaylistName.getValue()))
-                    .stream().map(Item::getPath).collect(Collectors.toList()).get(nextIndex));
+            selectedMedia.set(nextItem.getPath());
         } else {
             logger.info("This is the LAST media on the playlist, hence it is not possible to get the next one");
         }
     }
 
-
     @FXML
     private void shuffle(javafx.event.ActionEvent event) {
-        List<String> shuffledFiles = playlistDAO.getItemsByPlaylist(playlistDAO.readPlaylistByName(selectedPlaylistName.getValue())).stream()
-                .map(Item::getPath).collect(Collectors.toList());
-        Collections.shuffle(shuffledFiles);
-        System.out.println(shuffledFiles);
-        mediaPlayer.setOnEndOfMedia(new Runnable() {
-            @Override
-            public void run() {
-                selectedIndex.set(0);
-                if (selectedIndex.get() != shuffledFiles.size() - 1) {
-                    int nextIndex = selectedIndex.get() + 1;
-                    selectedIndex.set(nextIndex);
-                    selectedMedia.set(shuffledFiles.get(nextIndex));
-                }
-            }
-        });
+        Playlist playlist = playlistDAO.readPlaylistByName(selectedPlaylistName.getValue());
+        if (shuffleToggle.isSelected()) {
+            playlist.shufflePlaylist();
+        } else {
+            playlist.unshufflePlaylist();
+        }
     }
 
     @FXML
     private void repeat(javafx.event.ActionEvent event) {
-        if (repeat) {
+        if (repeatToggle.isSelected()) {
             logger.info("Repeat OFF");
-            repeat = false;
         } else {
             logger.info("Repeat ON");
-            repeat = true;
         }
     }
 
@@ -355,7 +345,6 @@ public class Controller implements Initializable {
         stage.getIcons().add(new Image(getClass().getResource("/style/music-note.png").toString()));
         stage.show();
         Bindings.bindBidirectional(selectedMedia, playlistController.selectedFile());
-        Bindings.bindBidirectional(selectedIndex, playlistController.selectedIndex());
         Bindings.bindBidirectional(selectedPlaylistName, playlistController.selectedPlaylistName());
 
     }
@@ -388,6 +377,15 @@ public class Controller implements Initializable {
         Item item = playlistDAO.getItemByPath(playlistDAO.readPlaylistByName(selectedPlaylistName.getValue()), path);
         stage.setTitle(item.getArtist() + " < " + item.getYear() + " < " + item.getAlbum() + " < " + item.getTitle());
         metadata.setText(item.getTitle());
+        mediaPlayer.getMedia().getMetadata().addListener(new MapChangeListener<String, Object>(){
+            @Override
+            public void onChanged(Change<? extends String, ?> change) {
+                if(change.wasAdded()){
+                    if(change.getKey().equals("image"))
+                        albumCover.setImage((Image)change.getValueAdded());
+                }
+            }
+        });
         mediaView.setMediaPlayer(mediaPlayer);
         bindControls(mediaPlayer);
         mediaPlayer.play();

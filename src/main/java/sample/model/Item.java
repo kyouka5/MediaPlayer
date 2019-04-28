@@ -5,6 +5,9 @@ import javax.persistence.*;
 @Entity
 public class Item {
 
+    @Id
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    @Column(name = "id")
     private int id;
 
     private String path;
@@ -14,6 +17,9 @@ public class Item {
     private String album;
     private int year;
     private String genre;
+
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "playlist_id")
     private Playlist playlist;
 
     public Item() {
@@ -30,9 +36,72 @@ public class Item {
         this.playlist = playlist;
     }
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
-    @Column(name = "id")
+    public static class Builder {
+        private String path;
+        private String name;
+        private String title;
+        private String artist;
+        private String album;
+        private int year;
+        private String genre;
+        private Playlist playlist;
+
+        public Builder path(String path) {
+            this.path = path;
+            return this;
+        }
+
+        public Builder name(String name) {
+            this.name = name;
+            return this;
+        }
+
+        public Builder title(String title) {
+            this.title = title;
+            return this;
+        }
+
+        public Builder artist(String artist) {
+            this.artist = artist;
+            return this;
+        }
+
+        public Builder album(String album) {
+            this.album = album;
+            return this;
+        }
+
+        public Builder year(int year) {
+            this.year = year;
+            return this;
+        }
+
+        public Builder genre(String genre) {
+            this.genre = genre;
+            return this;
+        }
+
+        public Builder playlist(Playlist playlist) {
+            this.playlist = playlist;
+            return this;
+        }
+
+        public Item build() {
+            return new Item(this);
+        }
+    }
+
+    private Item(Builder builder) {
+        path = builder.path;
+        name = builder.name;
+        title = builder.title;
+        artist = builder.artist;
+        album = builder.album;
+        year = builder.year;
+        genre = builder.genre;
+        playlist = builder.playlist;
+    }
+
     public int getId() {
         return id;
     }
@@ -57,8 +126,6 @@ public class Item {
         this.name = name;
     }
 
-    @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "playlist_id")
     public Playlist getPlaylist() {
         return playlist;
     }
