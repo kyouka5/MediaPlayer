@@ -8,11 +8,11 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Text?>
 
-<HBox xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="sample.controller.PlaylistController">
+<HBox id="hbox" stylesheets="@../style/style.css" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="sample.controller.PlaylistController">
    <children>
       <VBox>
          <children>
-            <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Playlists">
+            <Text fill="#cccccc" strokeType="OUTSIDE" strokeWidth="0.0" text="Playlists">
                <VBox.margin>
                   <Insets bottom="10.0" />
                </VBox.margin>
@@ -42,7 +42,7 @@
       </VBox>
       <VBox>
          <children>
-            <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Items">
+            <Text fill="#cccccc" strokeType="OUTSIDE" strokeWidth="0.0" text="Items">
                <VBox.margin>
                   <Insets bottom="10.0" />
                </VBox.margin>

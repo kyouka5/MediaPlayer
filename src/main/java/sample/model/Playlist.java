@@ -1,6 +1,8 @@
 package sample.model;
 
 import javax.persistence.*;
+import javax.validation.constraints.Max;
+import javax.validation.constraints.Min;
 import java.util.*;
 
 @Entity
@@ -12,6 +14,8 @@ public class Playlist {
     private int id;
 
     @Column(length = 50, unique = true)
+    @Min(2)
+    @Max(50)
     private String name;
 
     @OneToMany(fetch = FetchType.EAGER, mappedBy = "playlist", orphanRemoval=true)

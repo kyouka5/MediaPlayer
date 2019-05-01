@@ -1,5 +1,7 @@
 package sample;
 
+import com.google.inject.Guice;
+import com.google.inject.Injector;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.event.EventHandler;
@@ -11,23 +13,27 @@ import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
 import sample.controller.Controller;
 import sample.controller.PlaylistController;
+import sample.dao.ItemDAO;
+import sample.dao.PersistenceModule;
 import sample.dao.PlaylistDAO;
-import sample.dao.PlaylistDAOFactory;
 
 
 public class MainApplication extends Application {
 
     private PlaylistDAO playlistDAO;
+    private ItemDAO itemDAO;
 
     @Override
     public void start(Stage primaryStage) throws Exception{
-        playlistDAO = PlaylistDAOFactory.getInstance().createPlaylistDAO();
+        Injector injector = Guice.createInjector(new PersistenceModule("mediaplayer"));
+        playlistDAO = injector.getInstance(PlaylistDAO.class);
+        itemDAO = injector.getInstance(ItemDAO.class);
         FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/sample.fxml"));
         Parent root = loader.load();
         Controller controller = loader.getController();
         FXMLLoader playlistloader = new FXMLLoader(getClass().getResource("/fxml/listview.fxml"));
         playlistloader.load();
-        playlistloader.<PlaylistController>getController().initData(playlistDAO);
+        playlistloader.<PlaylistController>getController().initData(playlistDAO, itemDAO);
         controller.setPlaylistController(playlistloader.getController());
         controller.setPlaylistRoot(playlistloader.getRoot());
         primaryStage.setTitle("Media Player");
@@ -39,7 +45,8 @@ public class MainApplication extends Application {
         primaryStage.setOnCloseRequest(new EventHandler<WindowEvent>() {
             @Override
             public void handle(WindowEvent windowEvent) {
-                PlaylistDAOFactory.getInstance().close();
+                playlistDAO.getEntityManager().close();
+                itemDAO.getEntityManager().close();
                 Platform.exit();
             }
         });

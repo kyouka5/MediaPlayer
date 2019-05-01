@@ -1,5 +1,4 @@
 package sample.model;
-
 import javax.persistence.*;
 
 @Entity
@@ -17,6 +16,7 @@ public class Item {
     private String album;
     private int year;
     private String genre;
+    private int numberOfViews;
 
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "playlist_id")
@@ -25,7 +25,7 @@ public class Item {
     public Item() {
     }
 
-    public Item(String path, String name, String title, String artist, String album, int year, String genre, Playlist playlist) {
+    public Item(String path, String name, String title, String artist, String album, int year, String genre, Playlist playlist, int numberOfViews) {
         this.path = path;
         this.name = name;
         this.title = title;
@@ -34,6 +34,7 @@ public class Item {
         this.year = year;
         this.genre = genre;
         this.playlist = playlist;
+        this.numberOfViews = numberOfViews;
     }
 
     public static class Builder {
@@ -45,6 +46,7 @@ public class Item {
         private int year;
         private String genre;
         private Playlist playlist;
+        private int numberOfViews;
 
         public Builder path(String path) {
             this.path = path;
@@ -86,6 +88,11 @@ public class Item {
             return this;
         }
 
+        public Builder numberOfViews(int numberOfViews) {
+            this.numberOfViews = numberOfViews;
+            return this;
+        }
+
         public Item build() {
             return new Item(this);
         }
@@ -100,6 +107,7 @@ public class Item {
         year = builder.year;
         genre = builder.genre;
         playlist = builder.playlist;
+        numberOfViews = builder.numberOfViews;
     }
 
     public int getId() {
@@ -172,6 +180,18 @@ public class Item {
 
     public void setGenre(String genre) {
         this.genre = genre;
+    }
+
+    public int getNumberOfViews() {
+        return numberOfViews;
+    }
+
+    public void setNumberOfViews(int numberOfViews) {
+        this.numberOfViews = numberOfViews;
+    }
+
+    public void incrementViews() {
+        numberOfViews++;
     }
 
 }

@@ -1,5 +1,7 @@
 package sample.controller;
 
+import com.google.inject.Guice;
+import com.google.inject.Injector;
 import javafx.application.Platform;
 import javafx.beans.InvalidationListener;
 import javafx.beans.Observable;
@@ -9,15 +11,12 @@ import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
-import javafx.collections.FXCollections;
 import javafx.collections.MapChangeListener;
-import javafx.collections.ObservableList;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
-import javafx.scene.control.ListView;
 import javafx.scene.control.Slider;
 import javafx.scene.control.ToggleButton;
 import javafx.scene.image.Image;
@@ -32,19 +31,15 @@ import javafx.util.Duration;
 import javafx.scene.text.Text;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import sample.dao.ItemDAO;
+import sample.dao.PersistenceModule;
 import sample.dao.PlaylistDAO;
-import sample.dao.PlaylistDAOFactory;
 import sample.model.Item;
 import sample.model.Playlist;
 import sample.utils.TimeUtil;
 
-import javax.swing.*;
-import java.awt.event.MouseListener;
 import java.net.URL;
-import java.util.Collections;
-import java.util.List;
 import java.util.ResourceBundle;
-import java.util.stream.Collectors;
 
 public class Controller implements Initializable {
 
@@ -90,6 +85,7 @@ public class Controller implements Initializable {
     @FXML
     ToggleButton shuffleToggle;
 
+
     public void setStage(Stage stage) {
         this.stage = stage;
     }
@@ -110,6 +106,7 @@ public class Controller implements Initializable {
     private ObjectProperty<String> selectedPlaylistName = new SimpleObjectProperty<>();
 
     private PlaylistDAO playlistDAO;
+    private ItemDAO itemDAO;
 
     private static Logger logger = LoggerFactory.getLogger(Controller.class);
 
@@ -124,7 +121,9 @@ public class Controller implements Initializable {
     @Override
     public void initialize(URL location, ResourceBundle resources) {
 
-        playlistDAO = PlaylistDAOFactory.getInstance().createPlaylistDAO();
+        Injector injector = Guice.createInjector(new PersistenceModule("mediaplayer"));
+        playlistDAO = injector.getInstance(PlaylistDAO.class);
+        itemDAO = injector.getInstance(ItemDAO.class);
 
         selectedMedia.addListener((observable, oldValue, newValue) -> {
             if (newValue != null) {
@@ -143,22 +142,6 @@ public class Controller implements Initializable {
             }
         });
     }
-
-//    @FXML
-//    private void handleButtonAction(javafx.event.ActionEvent actionEvent) {
-//        FileChooser fileChooser = new FileChooser();
-////        FileChooser.ExtensionFilter filter = new FileChooser.ExtensionFilter("Select a file (*.mp4)", "*.mp4");
-////        fileChooser.getExtensionFilters().add(filter);
-//        File file = fileChooser.showOpenDialog(null);
-//        filePath = file.toURI().toString();
-//        if (filePath != null) {
-//            if (mediaPlayer != null)
-//                mediaPlayer.dispose();
-//
-//            playItem(filePath);
-//
-//        }
-//    }
 
     private void bindControls(MediaPlayer mediaPlayer) {
         fitToSize();
@@ -207,11 +190,11 @@ public class Controller implements Initializable {
             public void run() {
                 if (!mediaPlayer.getStatus().equals(MediaPlayer.Status.PAUSED)) {
                     if (repeatToggle.isSelected()) {
-                        mediaPlayer.seek(Duration.ZERO);
-                        mediaPlayer.play();
+                        playItem(mediaPlayer.getMedia().getSource());
                     }
                     else {
                         playNextVideo();
+                        mediaPlayer.seek(Duration.ZERO);
                     }
                 }
             }
@@ -312,6 +295,7 @@ public class Controller implements Initializable {
             logger.info("Started the NEXT media on the list");
             selectedMedia.set(nextItem.getPath());
         } else {
+            mediaPlayer.stop();
             logger.info("This is the LAST media on the playlist, hence it is not possible to get the next one");
         }
     }
@@ -374,9 +358,16 @@ public class Controller implements Initializable {
         }
         Media media = new Media(path);
         mediaPlayer = new MediaPlayer(media);
-        Item item = playlistDAO.getItemByPath(playlistDAO.readPlaylistByName(selectedPlaylistName.getValue()), path);
-        stage.setTitle(item.getArtist() + " < " + item.getYear() + " < " + item.getAlbum() + " < " + item.getTitle());
-        metadata.setText(item.getTitle());
+        Item item = itemDAO.getItemByPath(playlistDAO.readPlaylistByName(selectedPlaylistName.getValue()), path);
+        item.incrementViews();
+        itemDAO.update(item);
+        if (item.getArtist() != null && item.getYear() != 0 && item.getAlbum() != null && item.getTitle() != null) {
+            stage.setTitle(item.getArtist() + " < " + item.getYear() + " < " + item.getAlbum() + " < " + item.getTitle());
+            metadata.setText(item.getTitle());
+        } else {
+            stage.setTitle("Media Player");
+            metadata.setText("");
+        }
         mediaPlayer.getMedia().getMetadata().addListener(new MapChangeListener<String, Object>(){
             @Override
             public void onChanged(Change<? extends String, ?> change) {

@@ -1,3 +1,59 @@
-#button {
+.button, .toggle-button {
     -fx-background-radius: 20;
+    -fx-background-color: radial-gradient(focus-angle 0deg , focus-distance 0% , center 50% 50% , radius 50% , #cccccc, #777777);
+    -fx-border-radius: 20;
+    -fx-border-color: #cccccc;
+}
+
+.button:hover, .toggle-button:hover {
+    -fx-background-color: radial-gradient(focus-angle 0deg , focus-distance 0% , center 50% 50% , radius 50% , #cccccc, #333333)
+}
+
+.toggle-button:selected {
+    -fx-background-color: radial-gradient(focus-angle 0deg , focus-distance 0% , center 50% 50% , radius 50% , #cccccc, #333333)
+}
+
+.slider .track {
+    -fx-control-inner-background: #cccccc;
+}
+
+.slider .thumb {
+    -fx-background-radius: 20;
+    -fx-background-color: radial-gradient(focus-angle 0deg , focus-distance 0% , center 50% 50% , radius 50% , #cccccc, #777777);
+    -fx-border-radius: 20;
+    -fx-border-color: #cccccc;
+}
+
+.slider .axis {
+    -fx-tick-label-fill: #cccccc;
+}
+
+.list-view {
+    -fx-background-color: #cccccc;
+}
+
+.list-view .list-cell:even {
+    -fx-text-fill: #333333;
+    -fx-background-color: #cccccc;
+}
+.list-view .list-cell:odd {
+    -fx-text-fill: #333333;
+    -fx-background-color: #cccccc;
+}
+
+.list-view .list-cell:selected {
+    -fx-background-color: #777777;
+}
+
+.text-field {
+    -fx-background-color: #cccccc;
+    -fx-prompt-text-fill: #777777;
+}
+
+#menubar {
+    -fx-background-color: #333333;
+}
+
+#hbox {
+    -fx-background-color: #333333;
 }

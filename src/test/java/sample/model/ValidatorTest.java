@@ -33,4 +33,26 @@ public class ValidatorTest {
         assertFalse(invalidName3);
         assertFalse(invalidName4);
     }
+
+    @Test
+    public void lengthTest() {
+        Boolean validName1 = validator.checkLength("Hybrid Theory (2000)");
+        Boolean invalidName1 = validator.checkLength("a");
+        Boolean invalidName2 = validator.checkLength("And when I close my eyes tonight, To symphonies of blinding light!");
+
+        assertTrue(validName1);
+        assertFalse(invalidName1);
+        assertFalse(invalidName2);
+    }
+
+    @Test
+    public void whitespaceTest() {
+        Boolean validName1 = validator.checkLength("A Thousand Suns");
+        Boolean invalidName1 = validator.checkWhitespaces("      Meteora");
+        Boolean invalidName2 = validator.checkWhitespaces("      Minutes To Midnight      ");
+
+        assertTrue(validName1);
+        assertFalse(invalidName1);
+        assertFalse(invalidName2);
+    }
 }

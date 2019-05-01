@@ -1,34 +1,36 @@
 package sample.dao;
 
+import com.google.inject.persist.Transactional;
 import sample.model.Item;
 import sample.model.Playlist;
 
+import javax.persistence.TypedQuery;
 import java.util.List;
 
-public interface PlaylistDAO {
+public class PlaylistDAO extends GenericDAO {
+    public PlaylistDAO() {
+        super(Playlist.class);
+    }
 
-    public void createPlaylist(String name, List<Item> contents);
+    @Transactional
+    public void updatePlaylistName(Playlist playlist, String name) {
+        playlist.setName(name);
+    }
 
-    public Playlist readPlaylistByName(String name);
+    @Transactional
+    public void updatePlaylistContents(Playlist playlist, List<Item> contents) {
+        playlist.getContents().clear();
+        playlist.getContents().addAll(contents);
+    }
 
-    public void updatePlaylistName(Playlist playlist, String name);
+    public List<String> getPlaylistNames() {
+        TypedQuery<String> query = entityManager.createQuery("select p.name from Playlist p", String.class);
+        return query.getResultList();
+    }
 
-    public void updatePlaylistContents(Playlist playlist, List<Item> contents);
-
-    public void removePlaylist(Playlist playlist);
-
-    public List<String> getPlaylistNames();
-
-    public void createItem(String path, String name, String title, String artist, String album, int year, String genre, Playlist playlist);
-
-    public List<Item> getItemsByPlaylist(Playlist playlist);
-
-    public Item getItemByPath(Playlist playlist, String path);
-
-    public void removeItemFromPlaylistByName(Playlist playlist, String name);
-
-    public List<String> getAllPaths();
-
-    public void removeItemByPath(String path);
-
+    public Playlist readPlaylistByName(String name) {
+        TypedQuery<Playlist> query = entityManager.createQuery("select p from Playlist p where p.name='" + name + "'", Playlist.class);
+        List<Playlist> result = query.getResultList();
+        return !result.isEmpty() ? result.get(0) : null;
+    }
 }
