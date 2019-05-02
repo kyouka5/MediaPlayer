@@ -63,9 +63,7 @@ public class PlaylistTest {
     @Test
     public void testGetItemByPath() {
         Item existingPath = playlist.getItemByPath("/teszt.mp3");
-        Item notExistingPath = playlist.getItemByPath("/teszt_nemletezo.mp3");
         assertEquals(item1, existingPath);
-        assertThrows(NullPointerException.class, (Executable) notExistingPath);
     }
 
     @Test

@@ -16,7 +16,7 @@
 <?import javafx.scene.media.MediaView?>
 <?import javafx.scene.text.Text?>
 
-<BorderPane maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="mediaplayer.controller.Controller">
+<BorderPane maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" style="-fx-background-color: #111111;" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="mediaplayer.controller.Controller">
    <bottom>
       <VBox id="menubar" fx:id="vBox" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" stylesheets="@../style/style.css" BorderPane.alignment="CENTER">
          <children>
@@ -79,7 +79,22 @@
                         </ImageView>
                      </graphic></Button>
                   <Separator prefWidth="50.0" visible="false" />
-                  <ToggleButton id="button" fx:id="repeatToggle" contentDisplay="GRAPHIC_ONLY" mnemonicParsing="false" onAction="#repeat" stylesheets="@../style/style.css" text="Repeat">
+                  <ToggleButton id="button" fx:id="shuffleToggle" contentDisplay="GRAPHIC_ONLY" mnemonicParsing="false" onAction="#shuffle" stylesheets="@../style/style.css" text="Shuffle">
+                     <graphic>
+                        <ImageView fitWidth="15.0" opacity="0.8" pickOnBounds="true" preserveRatio="true">
+                           <image>
+                              <Image url="@../style/shuffle.png" />
+                           </image>
+                        </ImageView>
+                     </graphic>
+                     <tooltip>
+                        <Tooltip text="Toggle shuffle" />
+                     </tooltip>
+                     <toggleGroup>
+                        <ToggleGroup fx:id="repeatShuffle" />
+                     </toggleGroup>
+                  </ToggleButton>
+                  <ToggleButton id="button" fx:id="repeatToggle" contentDisplay="GRAPHIC_ONLY" mnemonicParsing="false" onAction="#repeat" stylesheets="@../style/style.css" text="Repeat" toggleGroup="$repeatShuffle">
                      <graphic>
                         <ImageView fitWidth="15.0" opacity="0.8" pickOnBounds="true" preserveRatio="true">
                            <image>
@@ -90,23 +105,11 @@
                      <tooltip>
                         <Tooltip text="Toggle repeat" />
                      </tooltip>
+                  </ToggleButton>
+                  <ToggleButton id="button" contentDisplay="GRAPHIC_ONLY" mnemonicParsing="false" onAction="#toggleFullscreen" stylesheets="@../style/style.css" text="Full Screen">
                      <toggleGroup>
-                        <ToggleGroup fx:id="repeatShuffle" />
+                        <ToggleGroup fx:id="repeatShuffle1" />
                      </toggleGroup>
-                  </ToggleButton>
-                  <ToggleButton id="button" fx:id="shuffleToggle" contentDisplay="GRAPHIC_ONLY" mnemonicParsing="false" onAction="#shuffle" stylesheets="@../style/style.css" text="Shuffle" toggleGroup="$repeatShuffle">
-                     <graphic>
-                        <ImageView fitWidth="15.0" opacity="0.8" pickOnBounds="true" preserveRatio="true">
-                           <image>
-                              <Image url="@../style/shuffle.png" />
-                           </image>
-                        </ImageView>
-                     </graphic>
-                     <tooltip>
-                        <Tooltip text="Toggle repeat" />
-                     </tooltip>
-                  </ToggleButton>
-                  <Button id="button" contentDisplay="GRAPHIC_ONLY" mnemonicParsing="false" onAction="#toggleFullscreen" stylesheets="@../style/style.css" text="Full Screen">
                      <graphic>
                         <ImageView fitWidth="15.0" opacity="0.8" pickOnBounds="true" preserveRatio="true">
                            <image>
@@ -115,9 +118,9 @@
                         </ImageView>
                      </graphic>
                      <tooltip>
-                        <Tooltip text="Toggle fullscreen" />
+                        <Tooltip text="Toggle full screen" />
                      </tooltip>
-                  </Button>
+                  </ToggleButton>
                   <Separator opacity="0.0" HBox.hgrow="ALWAYS" />
                   <Button id="button" contentDisplay="GRAPHIC_ONLY" mnemonicParsing="false" onAction="#muteUnmuteVideo" stylesheets="@../style/style.css" text="Mute / Unmute">
                      <graphic>
