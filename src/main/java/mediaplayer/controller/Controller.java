@@ -36,7 +36,7 @@ import mediaplayer.dao.PersistenceModule;
 import mediaplayer.dao.PlaylistDAO;
 import mediaplayer.model.Item;
 import mediaplayer.model.Playlist;
-import mediaplayer.utils.TimeUtil;
+import mediaplayer.util.TimeUtil;
 
 import java.net.URL;
 import java.util.ResourceBundle;

@@ -40,7 +40,7 @@ import mediaplayer.dao.PersistenceModule;
 import mediaplayer.dao.PlaylistDAO;
 import mediaplayer.model.Item;
 import mediaplayer.model.Playlist;
-import mediaplayer.utils.Validator;
+import mediaplayer.util.Validator;
 
 public class PlaylistController implements Initializable {
 
@@ -71,12 +71,6 @@ public class PlaylistController implements Initializable {
     private Validator validator = new Validator();
 
     private static Logger logger = LoggerFactory.getLogger(Controller.class);
-
-    public void initData(PlaylistDAO playlistDAO, ItemDAO itemDAO) {
-        playlistDAO = this.playlistDAO;
-        itemDAO = this.itemDAO;
-
-    }
 
     /**
      * Called to initialize a controller after its root element has been

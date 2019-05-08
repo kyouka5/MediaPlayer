@@ -4,7 +4,6 @@ import javafx.util.Duration;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import mediaplayer.utils.TimeUtil;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
