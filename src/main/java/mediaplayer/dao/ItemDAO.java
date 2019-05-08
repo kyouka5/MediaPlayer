@@ -3,6 +3,7 @@ package mediaplayer.dao;
 import com.google.inject.persist.Transactional;
 import mediaplayer.model.Item;
 import mediaplayer.model.Playlist;
+import mediaplayer.util.jpa.GenericDAO;
 
 import javax.persistence.TypedQuery;
 import java.util.List;

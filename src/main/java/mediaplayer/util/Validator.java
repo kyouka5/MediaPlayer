@@ -2,7 +2,7 @@ package mediaplayer.util;
 
 import com.google.inject.Guice;
 import com.google.inject.Injector;
-import mediaplayer.dao.PersistenceModule;
+import mediaplayer.util.guice.PersistenceModule;
 import mediaplayer.dao.PlaylistDAO;
 
 public class Validator {

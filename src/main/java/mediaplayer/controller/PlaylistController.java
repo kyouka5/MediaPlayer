@@ -36,7 +36,7 @@ import org.jaudiotagger.tag.TagException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import mediaplayer.dao.ItemDAO;
-import mediaplayer.dao.PersistenceModule;
+import mediaplayer.util.guice.PersistenceModule;
 import mediaplayer.dao.PlaylistDAO;
 import mediaplayer.model.Item;
 import mediaplayer.model.Playlist;
@@ -57,6 +57,13 @@ public class PlaylistController implements Initializable {
     private ObjectProperty<Integer> selectedIndex = new SimpleObjectProperty<>();
     private ObjectProperty<String> selectedPlaylistName = new SimpleObjectProperty<>();
 
+    private PlaylistDAO playlistDAO;
+    private ItemDAO itemDAO;
+
+    private Validator validator = new Validator();
+
+    private static Logger logger = LoggerFactory.getLogger(Controller.class);
+
     public ObjectProperty<String> selectedFile() {
         return selectedMedia;
     }
@@ -64,13 +71,6 @@ public class PlaylistController implements Initializable {
     public ObjectProperty<String> selectedPlaylistName() {
         return selectedPlaylistName;
     }
-
-    private PlaylistDAO playlistDAO;
-    private ItemDAO itemDAO;
-
-    private Validator validator = new Validator();
-
-    private static Logger logger = LoggerFactory.getLogger(Controller.class);
 
     /**
      * Called to initialize a controller after its root element has been

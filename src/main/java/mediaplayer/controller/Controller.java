@@ -32,7 +32,7 @@ import javafx.scene.text.Text;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import mediaplayer.dao.ItemDAO;
-import mediaplayer.dao.PersistenceModule;
+import mediaplayer.util.guice.PersistenceModule;
 import mediaplayer.dao.PlaylistDAO;
 import mediaplayer.model.Item;
 import mediaplayer.model.Playlist;
@@ -51,13 +51,13 @@ public class Controller implements Initializable {
     private MediaView mediaView;
 
     @FXML
-    private Slider slider;
+    private Slider volumeSlider;
 
     @FXML
-    private Slider seekSlider;
+    private Slider durationSlider;
 
     @FXML
-    private HBox hBox;
+    private HBox menuBar;
 
     @FXML
     private Text timeElapsed;
@@ -77,38 +77,38 @@ public class Controller implements Initializable {
     private ImageView muteUnmuteButton;
 
     @FXML
-    private Text metadata;
+    private Text itemName;
 
     @FXML
-    ToggleButton repeatToggle;
+    private ToggleButton repeatToggle;
 
     @FXML
-    ToggleButton shuffleToggle;
+    private ToggleButton shuffleToggle;
+
+    private PlaylistController playlistController;
+
+    private Scene playlistScene;
+
+    private PlaylistDAO playlistDAO;
+    private ItemDAO itemDAO;
+
+    private ObjectProperty<String> selectedMedia = new SimpleObjectProperty<>();
+    private ObjectProperty<String> selectedPlaylistName = new SimpleObjectProperty<>();
+
+    private static Logger logger = LoggerFactory.getLogger(Controller.class);
 
 
     public void setStage(Stage stage) {
         this.stage = stage;
     }
 
-    private PlaylistController playlistController;
-
     public void setPlaylistController(PlaylistController playlistController) {
         this.playlistController = playlistController;
     }
 
-    private Scene playlistScene;
-
     public void setPlaylistRoot(Parent playlistRoot) {
         playlistScene = new Scene(playlistRoot);
     }
-
-    private ObjectProperty<String> selectedMedia = new SimpleObjectProperty<>();
-    private ObjectProperty<String> selectedPlaylistName = new SimpleObjectProperty<>();
-
-    private PlaylistDAO playlistDAO;
-    private ItemDAO itemDAO;
-
-    private static Logger logger = LoggerFactory.getLogger(Controller.class);
 
     /**
      * Called to initialize a controller after its root element has been
@@ -145,19 +145,19 @@ public class Controller implements Initializable {
     private void bindControls(MediaPlayer mediaPlayer) {
         fitToSize();
 
-        slider.setValue(mediaPlayer.getVolume() * 100);
+        volumeSlider.setValue(mediaPlayer.getVolume() * 100);
 
-        slider.valueProperty().addListener(new InvalidationListener() {
+        volumeSlider.valueProperty().addListener(new InvalidationListener() {
             @Override
             public void invalidated(Observable observable) {
-                mediaPlayer.setVolume(slider.getValue() / 100);
+                mediaPlayer.setVolume(volumeSlider.getValue() / 100);
             }
         });
 
         mediaPlayer.currentTimeProperty().addListener(new ChangeListener<Duration>() {
             @Override
             public void changed(ObservableValue<? extends Duration> observable, Duration oldValue, Duration newValue) {
-                seekSlider.setValue(newValue.toSeconds());
+                durationSlider.setValue(newValue.toSeconds());
             }
         });
 
@@ -168,17 +168,17 @@ public class Controller implements Initializable {
             }
         });
 
-        seekSlider.setOnMouseClicked(new EventHandler<MouseEvent>() {
+        durationSlider.setOnMouseClicked(new EventHandler<MouseEvent>() {
             @Override
             public void handle(MouseEvent event) {
-                mediaPlayer.seek(Duration.seconds(seekSlider.getValue()));
+                mediaPlayer.seek(Duration.seconds(durationSlider.getValue()));
             }
         });
 
         mediaPlayer.setOnReady(new Runnable() {
             @Override
             public void run() {
-                seekSlider.setMax((mediaPlayer.getTotalDuration().toSeconds()));
+                durationSlider.setMax((mediaPlayer.getTotalDuration().toSeconds()));
                 TimeUtil timeUtil = new TimeUtil();
                 totalTime.setText(timeUtil.timeToString(mediaPlayer.getTotalDuration()));
             }
@@ -247,14 +247,14 @@ public class Controller implements Initializable {
     @FXML
     private void muteUnmuteVideo(javafx.event.ActionEvent event) {
         if (mediaPlayer != null) {
-            if (slider.valueProperty().intValue() != 0) {
+            if (volumeSlider.valueProperty().intValue() != 0) {
                 logger.info("The media player has been MUTED");
-                previousVolume = slider.valueProperty().intValue();
-                slider.setValue(0);
+                previousVolume = volumeSlider.valueProperty().intValue();
+                volumeSlider.setValue(0);
                 muteUnmuteButton.setImage(new Image(getClass().getResource("/style/volume-level.png").toString()));
             } else {
                 logger.info("The media player has been UNMUTED");
-                slider.setValue(previousVolume);
+                volumeSlider.setValue(previousVolume);
                 muteUnmuteButton.setImage(new Image(getClass().getResource("/style/speaker.png").toString()));
             }
         } else {
@@ -347,7 +347,7 @@ public class Controller implements Initializable {
         DoubleProperty width = mediaView.fitWidthProperty();
         DoubleProperty height = mediaView.fitHeightProperty();
         width.bind(Bindings.selectDouble(mediaView.sceneProperty(), "width"));
-        height.bind(Bindings.selectDouble(mediaView.sceneProperty(), "height").subtract(hBox.getHeight()).subtract(seekSlider.getHeight()));
+        height.bind(Bindings.selectDouble(mediaView.sceneProperty(), "height").subtract(menuBar.getHeight()).subtract(durationSlider.getHeight()));
     }
 
     private void playItem(String path) {
@@ -362,10 +362,10 @@ public class Controller implements Initializable {
         itemDAO.update(item);
         if (item.getArtist() != null && item.getYear() != 0 && item.getAlbum() != null && item.getTitle() != null) {
             stage.setTitle(item.getArtist() + " < " + item.getYear() + " < " + item.getAlbum() + " < " + item.getTitle());
-            metadata.setText(item.getTitle());
+            itemName.setText(item.getTitle());
         } else {
             stage.setTitle("Media Player");
-            metadata.setText("");
+            itemName.setText("");
         }
         mediaPlayer.getMedia().getMetadata().addListener(new MapChangeListener<String, Object>(){
             @Override

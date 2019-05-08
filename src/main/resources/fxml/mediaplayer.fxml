@@ -23,14 +23,14 @@
             <HBox>
                <children>
                   <Text fx:id="timeElapsed" fill="#cccccc" strokeType="OUTSIDE" strokeWidth="0.0" text="--:--:--" />
-                  <Slider fx:id="seekSlider" maxHeight="15.0" minHeight="15.0" prefHeight="15.0" HBox.hgrow="ALWAYS" />
+                  <Slider fx:id="durationSlider" maxHeight="15.0" minHeight="15.0" prefHeight="15.0" HBox.hgrow="ALWAYS" />
                   <Text fx:id="totalTime" fill="#cccccc" strokeType="OUTSIDE" strokeWidth="0.0" text="--:--:--" />
                </children>
                <VBox.margin>
                   <Insets />
                </VBox.margin>
             </HBox>
-            <HBox fx:id="hBox" alignment="CENTER_RIGHT" spacing="5.0">
+            <HBox fx:id="menuBar" alignment="CENTER_RIGHT" spacing="5.0">
                <children>
                   <Button id="button" contentDisplay="GRAPHIC_ONLY" layoutX="10.0" layoutY="11.0" mnemonicParsing="false" onAction="#togglePlaylists" prefWidth="0.0" stylesheets="@../style/style.css" text="Playlists">
                      <graphic>
@@ -42,7 +42,7 @@
                      </graphic></Button>
                   <StackPane prefHeight="38.0" prefWidth="290.0" HBox.hgrow="ALWAYS">
                      <children>
-                        <Text fx:id="metadata" fill="#cccccc" strokeType="OUTSIDE" strokeWidth="0.0" />
+                        <Text fx:id="itemName" fill="#cccccc" strokeType="OUTSIDE" strokeWidth="0.0" />
                         <Separator prefWidth="200.0" visible="false" />
                      </children>
                   </StackPane>
@@ -130,7 +130,7 @@
                            </image>
                         </ImageView>
                      </graphic></Button>
-                  <Slider fx:id="slider" showTickLabels="true" showTickMarks="true" />
+                  <Slider fx:id="volumeSlider" showTickLabels="true" showTickMarks="true" />
                </children>
                <VBox.margin>
                   <Insets left="5.0" right="5.0" />
