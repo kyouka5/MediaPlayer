@@ -24,7 +24,6 @@ import javafx.scene.control.Alert;
 import javafx.scene.control.ListView;
 import javafx.scene.control.TextField;
 import javafx.scene.input.MouseEvent;
-import javafx.scene.layout.Region;
 import javafx.stage.FileChooser;
 import org.jaudiotagger.audio.AudioFile;
 import org.jaudiotagger.audio.AudioFileIO;
@@ -115,12 +114,6 @@ public class PlaylistController implements Initializable {
             alert.setContentText("Some files are missing, hence they got removed from the database. \n");
             alert.showAndWait();
         }
-
-        //        for (int i = 0; i< playlistDAO.getPlaylistNames().size(); i++) {
-//            if (playlistDAO.readPlaylistByName(playlistDAO.getPlaylistNames().get(i)).getContents().isEmpty()) {
-//                playlistDAO.removePlaylist(playlistDAO.readPlaylistByName(playlistDAO.getPlaylistNames().get(i)));
-//            }
-//        }
 
         loadPlaylists();
     }

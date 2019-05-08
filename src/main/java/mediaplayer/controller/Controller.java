@@ -120,7 +120,6 @@ public class Controller implements Initializable {
      */
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-
         Injector injector = Guice.createInjector(new PersistenceModule("mediaplayer"));
         playlistDAO = injector.getInstance(PlaylistDAO.class);
         itemDAO = injector.getInstance(ItemDAO.class);
