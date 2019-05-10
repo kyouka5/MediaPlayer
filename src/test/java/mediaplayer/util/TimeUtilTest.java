@@ -8,11 +8,11 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class TimeUtilTest {
-    private TimeUtil timeUtil;
+    private TimeFormatter timeUtil;
 
     @BeforeEach
     public void setUp() {
-        timeUtil = new TimeUtil();
+        timeUtil = new TimeFormatter();
     }
 
     @AfterEach

@@ -61,12 +61,6 @@ public class PlaylistTest {
     }
 
     @Test
-    public void testGetItemByPath() {
-        Item existingPath = playlist.getItemByPath("/teszt.mp3");
-        assertEquals(item1, existingPath);
-    }
-
-    @Test
     public void testShuffle() {
         Playlist shouldReturnOriginal = playlist;
         shouldReturnOriginal.shufflePlaylist();

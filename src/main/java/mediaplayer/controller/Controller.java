@@ -36,7 +36,7 @@ import mediaplayer.util.guice.PersistenceModule;
 import mediaplayer.dao.PlaylistDAO;
 import mediaplayer.model.Item;
 import mediaplayer.model.Playlist;
-import mediaplayer.util.TimeUtil;
+import mediaplayer.util.TimeFormatter;
 
 import java.net.URL;
 import java.util.ResourceBundle;
@@ -45,7 +45,7 @@ public class Controller implements Initializable {
 
     private MediaPlayer mediaPlayer;
 
-    private int previousVolume;
+    private Integer previousVolume;
 
     @FXML
     private MediaView mediaView;
@@ -110,14 +110,6 @@ public class Controller implements Initializable {
         playlistScene = new Scene(playlistRoot);
     }
 
-    /**
-     * Called to initialize a controller after its root element has been
-     * completely processed.
-     *
-     * @param location  The location used to resolve relative paths for the root object, or
-     *                  {@code null} if the location is not known.
-     * @param resources The resources used to localize the root object, or {@code null} if
-     */
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         Injector injector = Guice.createInjector(new PersistenceModule("mediaplayer"));
@@ -135,14 +127,14 @@ public class Controller implements Initializable {
             public void handle(MouseEvent mouseEvent) {
                 if (mediaPlayer != null) {
                     if (mouseEvent.getClickCount() == 1 && !mediaPlayer.getCurrentTime().equals(mediaPlayer.getTotalDuration())) {
-                        playOrPauseVideo();
+                        playOrPauseMedia();
                     }
                 }
             }
         });
     }
 
-    private void bindControls(MediaPlayer mediaPlayer) {
+    private void setControls(MediaPlayer mediaPlayer) {
         fitToSize();
 
         volumeSlider.setValue(mediaPlayer.getVolume() * 100);
@@ -151,6 +143,13 @@ public class Controller implements Initializable {
             @Override
             public void invalidated(Observable observable) {
                 mediaPlayer.setVolume(volumeSlider.getValue() / 100);
+            }
+        });
+
+        durationSlider.setOnMouseClicked(new EventHandler<MouseEvent>() {
+            @Override
+            public void handle(MouseEvent event) {
+                mediaPlayer.seek(Duration.seconds(durationSlider.getValue()));
             }
         });
 
@@ -168,18 +167,11 @@ public class Controller implements Initializable {
             }
         });
 
-        durationSlider.setOnMouseClicked(new EventHandler<MouseEvent>() {
-            @Override
-            public void handle(MouseEvent event) {
-                mediaPlayer.seek(Duration.seconds(durationSlider.getValue()));
-            }
-        });
-
         mediaPlayer.setOnReady(new Runnable() {
             @Override
             public void run() {
                 durationSlider.setMax((mediaPlayer.getTotalDuration().toSeconds()));
-                TimeUtil timeUtil = new TimeUtil();
+                TimeFormatter timeUtil = new TimeFormatter();
                 totalTime.setText(timeUtil.timeToString(mediaPlayer.getTotalDuration()));
             }
         });
@@ -190,9 +182,8 @@ public class Controller implements Initializable {
                 if (!mediaPlayer.getStatus().equals(MediaPlayer.Status.PAUSED)) {
                     if (repeatToggle.isSelected()) {
                         playItem(mediaPlayer.getMedia().getSource());
-                    }
-                    else {
-                        playNextVideo();
+                    } else {
+                        playNextMedia();
                         mediaPlayer.seek(Duration.ZERO);
                     }
                 }
@@ -201,27 +192,34 @@ public class Controller implements Initializable {
 
     }
 
+    private void fitToSize() {
+        DoubleProperty width = mediaView.fitWidthProperty();
+        DoubleProperty height = mediaView.fitHeightProperty();
+        width.bind(Bindings.selectDouble(mediaView.sceneProperty(), "width"));
+        height.bind(Bindings.selectDouble(mediaView.sceneProperty(), "height").subtract(menuBar.getHeight()).subtract(durationSlider.getHeight()));
+    }
+
     private void updateTime() {
         if (mediaPlayer != null) {
             Platform.runLater(new Runnable() {
                 public void run() {
-                    TimeUtil timeUtil = new TimeUtil();
+                    TimeFormatter timeUtil = new TimeFormatter();
                     timeElapsed.setText(timeUtil.timeToString(mediaPlayer.getCurrentTime()));
                 }
             });
         }
     }
 
-    private void playOrPauseVideo() {
+    private void playOrPauseMedia() {
         if (mediaPlayer != null) {
             if (mediaPlayer.getStatus().equals(MediaPlayer.Status.PAUSED) || mediaPlayer.getStatus().equals(MediaPlayer.Status.STOPPED)) {
                 logger.info("The media player has been RESUMED");
                 mediaPlayer.play();
-                playPauseButton.setImage(new Image(getClass().getResource("/style/pause-button.png").toString()));
+                playPauseButton.setImage(new Image(getClass().getResource("/icons/pause-button.png").toString()));
             } else {
                 logger.info("The media player has been PAUSED");
                 mediaPlayer.pause();
-                playPauseButton.setImage(new Image(getClass().getResource("/style/play-button-1.png").toString()));
+                playPauseButton.setImage(new Image(getClass().getResource("/icons/play-button-1.png").toString()));
             }
         } else {
             logger.warn("Unable to PLAY or PAUSE - no media has been selected");
@@ -229,44 +227,26 @@ public class Controller implements Initializable {
     }
 
     @FXML
-    private void playOrPauseVideo(javafx.event.ActionEvent event) {
-        playOrPauseVideo();
+    private void playOrPauseMedia(javafx.event.ActionEvent event) {
+        playOrPauseMedia();
     }
 
     @FXML
-    private void stopVideo(javafx.event.ActionEvent event) {
+    private void stopMedia(javafx.event.ActionEvent event) {
         if (mediaPlayer != null) {
             logger.info("The media player has been STOPPED");
             mediaPlayer.stop();
-            playPauseButton.setImage(new Image(getClass().getResource("/style/play-button-1.png").toString()));
+            playPauseButton.setImage(new Image(getClass().getResource("/icons/play-button-1.png").toString()));
         } else {
             logger.warn("Unable to STOP - no media has been selected");
         }
     }
 
     @FXML
-    private void muteUnmuteVideo(javafx.event.ActionEvent event) {
+    private void previousMedia(javafx.event.ActionEvent event) {
         if (mediaPlayer != null) {
-            if (volumeSlider.valueProperty().intValue() != 0) {
-                logger.info("The media player has been MUTED");
-                previousVolume = volumeSlider.valueProperty().intValue();
-                volumeSlider.setValue(0);
-                muteUnmuteButton.setImage(new Image(getClass().getResource("/style/volume-level.png").toString()));
-            } else {
-                logger.info("The media player has been UNMUTED");
-                volumeSlider.setValue(previousVolume);
-                muteUnmuteButton.setImage(new Image(getClass().getResource("/style/speaker.png").toString()));
-            }
-        } else {
-            logger.warn("Unable to MUTE or UNMUTE - no media has been selected");
-        }
-    }
-
-    @FXML
-    private void previousVideo(javafx.event.ActionEvent event) {
-        if (mediaPlayer != null) {
-            Playlist playlist = playlistDAO.readPlaylistByName(selectedPlaylistName.getValue());
-            Item previousItem = playlist.getPreviousItem(playlist.getItemByPath(selectedMedia.getValue()));
+            Playlist playlist = playlistDAO.getPlaylistByName(selectedPlaylistName.getValue());
+            Item previousItem = playlist.getPreviousItem(itemDAO.getItemByPath(playlist, selectedMedia.getValue()));
             if (previousItem != null) {
                 logger.info("Started the PREVIOUS media on the list");
                 selectedMedia.set(previousItem.getPath());
@@ -279,17 +259,17 @@ public class Controller implements Initializable {
     }
 
     @FXML
-    private void nextVideo(javafx.event.ActionEvent event) {
+    private void nextMedia(javafx.event.ActionEvent event) {
         if (mediaPlayer != null) {
-            playNextVideo();
+            playNextMedia();
         } else {
             logger.warn("Unable to play the NEXT media - no media has been selected");
         }
     }
 
-    private void playNextVideo() {
-        Playlist playlist = playlistDAO.readPlaylistByName(selectedPlaylistName.getValue());
-        Item nextItem = playlist.getNextItem(playlist.getItemByPath(selectedMedia.getValue()));
+    private void playNextMedia() {
+        Playlist playlist = playlistDAO.getPlaylistByName(selectedPlaylistName.getValue());
+        Item nextItem = playlist.getNextItem(itemDAO.getItemByPath(playlist, selectedMedia.getValue()));
         if (nextItem != null) {
             logger.info("Started the NEXT media on the list");
             selectedMedia.set(nextItem.getPath());
@@ -299,9 +279,59 @@ public class Controller implements Initializable {
         }
     }
 
+    private void playItem(String path) {
+        logger.info("Set to play: " + path);
+        if (mediaPlayer != null) {
+            mediaPlayer.dispose();
+        }
+        Media media = new Media(path);
+        mediaPlayer = new MediaPlayer(media);
+        Item item = itemDAO.getItemByPath(playlistDAO.getPlaylistByName(selectedPlaylistName.getValue()), path);
+        item.incrementViews();
+        itemDAO.update(item);
+        if (item.getArtist() != null && item.getYear() != 0 && item.getAlbum() != null && item.getTitle() != null) {
+            stage.setTitle(item.getArtist() + " < " + item.getYear() + " < " + item.getAlbum() + " < " + item.getTitle());
+            itemName.setText(item.getTitle());
+        } else {
+            stage.setTitle("Media Player");
+            itemName.setText("");
+        }
+        mediaPlayer.getMedia().getMetadata().addListener(new MapChangeListener<String, Object>() {
+            @Override
+            public void onChanged(Change<? extends String, ?> change) {
+                if (change.wasAdded()) {
+                    if (change.getKey().equals("image"))
+                        albumCover.setImage((Image) change.getValueAdded());
+                }
+            }
+        });
+        mediaView.setMediaPlayer(mediaPlayer);
+        setControls(mediaPlayer);
+        mediaPlayer.play();
+        playPauseButton.setImage(new Image(getClass().getResource("/icons/pause-button.png").toString()));
+    }
+
+    @FXML
+    private void muteUnmuteMedia(javafx.event.ActionEvent event) {
+        if (mediaPlayer != null) {
+            if (volumeSlider.valueProperty().intValue() != 0) {
+                logger.info("The media player has been MUTED");
+                previousVolume = volumeSlider.valueProperty().intValue();
+                volumeSlider.setValue(0);
+                muteUnmuteButton.setImage(new Image(getClass().getResource("/icons/volume-level.png").toString()));
+            } else {
+                logger.info("The media player has been UNMUTED");
+                volumeSlider.setValue(previousVolume);
+                muteUnmuteButton.setImage(new Image(getClass().getResource("/icons/speaker.png").toString()));
+            }
+        } else {
+            logger.warn("Unable to MUTE or UNMUTE - no media has been selected");
+        }
+    }
+
     @FXML
     private void shuffle(javafx.event.ActionEvent event) {
-        Playlist playlist = playlistDAO.readPlaylistByName(selectedPlaylistName.getValue());
+        Playlist playlist = playlistDAO.getPlaylistByName(selectedPlaylistName.getValue());
         if (shuffleToggle.isSelected()) {
             playlist.shufflePlaylist();
         } else {
@@ -319,20 +349,6 @@ public class Controller implements Initializable {
     }
 
     @FXML
-    private void togglePlaylists(javafx.event.ActionEvent event) {
-        logger.info("Opened the playlist management window");
-        Stage stage = new Stage();
-        stage.setScene(playlistScene);
-        stage.setResizable(false);
-        stage.setTitle("Manage playlists");
-        stage.getIcons().add(new Image(getClass().getResource("/style/music-note.png").toString()));
-        stage.show();
-        Bindings.bindBidirectional(selectedMedia, playlistController.selectedFile());
-        Bindings.bindBidirectional(selectedPlaylistName, playlistController.selectedPlaylistName());
-
-    }
-
-    @FXML
     private void toggleFullscreen(javafx.event.ActionEvent event) {
         if (!stage.isFullScreen()) {
             logger.info("Switched to Full Screen Mode");
@@ -343,43 +359,18 @@ public class Controller implements Initializable {
         }
     }
 
-    private void fitToSize() {
-        DoubleProperty width = mediaView.fitWidthProperty();
-        DoubleProperty height = mediaView.fitHeightProperty();
-        width.bind(Bindings.selectDouble(mediaView.sceneProperty(), "width"));
-        height.bind(Bindings.selectDouble(mediaView.sceneProperty(), "height").subtract(menuBar.getHeight()).subtract(durationSlider.getHeight()));
-    }
+    @FXML
+    private void showPlaylists(javafx.event.ActionEvent event) {
+        logger.info("Opened the playlist management window");
+        Stage stage = new Stage();
+        stage.setScene(playlistScene);
+        stage.setResizable(false);
+        stage.setTitle("Manage playlists");
+        stage.getIcons().add(new Image(getClass().getResource("/icons/music-note.png").toString()));
+        stage.show();
+        Bindings.bindBidirectional(selectedMedia, playlistController.selectedFile());
+        Bindings.bindBidirectional(selectedPlaylistName, playlistController.selectedPlaylistName());
 
-    private void playItem(String path) {
-        logger.info("Set to play: " + path);
-        if (mediaPlayer != null) {
-            mediaPlayer.dispose();
-        }
-        Media media = new Media(path);
-        mediaPlayer = new MediaPlayer(media);
-        Item item = itemDAO.getItemByPath(playlistDAO.readPlaylistByName(selectedPlaylistName.getValue()), path);
-        item.incrementViews();
-        itemDAO.update(item);
-        if (item.getArtist() != null && item.getYear() != 0 && item.getAlbum() != null && item.getTitle() != null) {
-            stage.setTitle(item.getArtist() + " < " + item.getYear() + " < " + item.getAlbum() + " < " + item.getTitle());
-            itemName.setText(item.getTitle());
-        } else {
-            stage.setTitle("Media Player");
-            itemName.setText("");
-        }
-        mediaPlayer.getMedia().getMetadata().addListener(new MapChangeListener<String, Object>(){
-            @Override
-            public void onChanged(Change<? extends String, ?> change) {
-                if(change.wasAdded()){
-                    if(change.getKey().equals("image"))
-                        albumCover.setImage((Image)change.getValueAdded());
-                }
-            }
-        });
-        mediaView.setMediaPlayer(mediaPlayer);
-        bindControls(mediaPlayer);
-        mediaPlayer.play();
-        playPauseButton.setImage(new Image(getClass().getResource("/style/pause-button.png").toString()));
     }
 
 }
