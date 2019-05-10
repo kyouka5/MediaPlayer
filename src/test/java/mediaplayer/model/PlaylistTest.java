@@ -3,13 +3,11 @@ package mediaplayer.model;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.function.Executable;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class PlaylistTest {
     private Playlist playlist;
@@ -29,7 +27,6 @@ public class PlaylistTest {
         item2.setId(2);
         item3.setId(3);
 
-        item1.setPath("/teszt.mp3");
         List<Item> contents = new ArrayList<>();
         contents.add(item1);
         contents.add(item2);

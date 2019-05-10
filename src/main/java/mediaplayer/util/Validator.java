@@ -1,27 +1,20 @@
 package mediaplayer.util;
 
-import com.google.inject.Guice;
-import com.google.inject.Injector;
-import mediaplayer.util.guice.PersistenceModule;
+import lombok.AllArgsConstructor;
+import lombok.NoArgsConstructor;
 import mediaplayer.dao.PlaylistDAO;
 
 /**
  * Class to validate input from the user.
  */
+@NoArgsConstructor
+@AllArgsConstructor
 public class Validator {
 
     /**
      * A {@link PlaylistDAO} object.
      */
     private PlaylistDAO playlistDAO;
-
-    /**
-     * Constructor with dependency injection.
-     */
-    public Validator() {
-        Injector injector = Guice.createInjector(new PersistenceModule("mediaplayer"));
-        playlistDAO = injector.getInstance(PlaylistDAO.class);
-    }
 
     /**
      * Checks if the given {@code playlist name} meets all the criteria to be considered as valid.
@@ -56,7 +49,7 @@ public class Validator {
      * @return whether the {@code playlist name} is valid or not
      */
     public boolean checkUniqueness(String playlistName) {
-        return !playlistDAO.getPlaylistNames().contains(playlistName);
+        return playlistDAO.getPlaylistByName(playlistName) == null;
     }
 
 }

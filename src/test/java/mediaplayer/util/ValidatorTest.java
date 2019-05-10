@@ -1,5 +1,9 @@
 package mediaplayer.util;
 
+import com.google.inject.Guice;
+import com.google.inject.Injector;
+import mediaplayer.dao.PlaylistDAO;
+import mediaplayer.util.guice.PersistenceModule;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -8,10 +12,13 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class ValidatorTest {
     private Validator validator;
+    private PlaylistDAO playlistDAO;
 
     @BeforeEach
     public void setUp() {
-        validator = new Validator();
+        Injector injector = Guice.createInjector(new PersistenceModule("mediaplayer"));
+        playlistDAO = injector.getInstance(PlaylistDAO.class);
+        validator = new Validator(playlistDAO);
     }
 
     public void tearDown() {
@@ -24,7 +31,7 @@ public class ValidatorTest {
         Boolean leadingWhitespaces = validator.checkPlaylistName("      Meteora");
         Boolean whitespacesBoth = validator.checkPlaylistName("      Minutes To Midnight      ");
         Boolean whitespacesOnly = validator.checkPlaylistName("          ");
-        Boolean tooLong = validator.checkPlaylistName("And when I close my eyes tonight, To symphonies of blinding light!");
+        Boolean tooLong = validator.checkPlaylistName("And when I close my eyes tonight, To symphonies of blinding light");
 
         assertTrue(validName);
         assertFalse(leadingWhitespaces);
@@ -53,5 +60,14 @@ public class ValidatorTest {
         assertTrue(validName);
         assertFalse(leadingWhitespaces);
         assertFalse(whitespacesBoth);
+    }
+
+    @Test
+    public void uniquenessTest() {
+        Boolean notUniqueName = validator.checkUniqueness(playlistDAO.getPlaylistNames().get(0));
+        Boolean uniqueName = validator.checkUniqueness("   Test Playlist");
+
+        assertFalse(notUniqueName);
+        assertTrue(uniqueName);
     }
 }
