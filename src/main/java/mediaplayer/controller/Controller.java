@@ -291,6 +291,15 @@ public class Controller implements Initializable {
         Item item = itemDAO.getItemByPath(playlistDAO.getPlaylistByName(selectedPlaylistName.getValue()), path);
         item.incrementViews();
         itemDAO.update(item);
+        mediaView.setMediaPlayer(mediaPlayer);
+        setControls(mediaPlayer);
+        setMetadata(item);
+        mediaPlayer.play();
+        playPauseButton.setImage(new Image(getClass().getResource("/icons/pause-button.png").toString()));
+        playlistController.updateMostPlayed();
+    }
+
+    private void setMetadata(Item item) {
         if (item.getArtist() != null && item.getYear() != 0 && item.getAlbum() != null && item.getTitle() != null) {
             stage.setTitle(item.getArtist() + " < " + item.getYear() + " < " + item.getAlbum() + " < " + item.getTitle());
             itemName.setText(item.getTitle());
@@ -298,6 +307,7 @@ public class Controller implements Initializable {
             stage.setTitle("Media Player");
             itemName.setText("");
         }
+
         mediaPlayer.getMedia().getMetadata().addListener(new MapChangeListener<String, Object>() {
             @Override
             public void onChanged(Change<? extends String, ?> change) {
@@ -307,12 +317,6 @@ public class Controller implements Initializable {
                 }
             }
         });
-        mediaView.setMediaPlayer(mediaPlayer);
-        setControls(mediaPlayer);
-        mediaPlayer.play();
-        playPauseButton.setImage(new Image(getClass().getResource("/icons/pause-button.png").toString()));
-        playlistController.updateMostPlayed();
-        itemDAO.flush();
     }
 
     @FXML
@@ -337,8 +341,10 @@ public class Controller implements Initializable {
     private void shuffle(javafx.event.ActionEvent event) {
         Playlist playlist = playlistDAO.getPlaylistByName(selectedPlaylistName.getValue());
         if (shuffleToggle.isSelected()) {
+            logger.info("Shuffle ON");
             playlist.shufflePlaylist();
         } else {
+            logger.info("Shuffle OFF");
             playlist.unshufflePlaylist();
         }
     }
@@ -346,9 +352,9 @@ public class Controller implements Initializable {
     @FXML
     private void repeat(javafx.event.ActionEvent event) {
         if (repeatToggle.isSelected()) {
-            logger.info("Repeat OFF");
-        } else {
             logger.info("Repeat ON");
+        } else {
+            logger.info("Repeat OFF");
         }
     }
 
