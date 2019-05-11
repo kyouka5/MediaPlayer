@@ -246,6 +246,7 @@ public class Controller implements Initializable {
     private void previousMedia(javafx.event.ActionEvent event) {
         if (mediaPlayer != null) {
             Playlist playlist = playlistDAO.getPlaylistByName(selectedPlaylistName.getValue());
+            playlistDAO.updatePlaylistContents(playlist, itemDAO.getItemsByPlaylist(playlist));
             Item previousItem = playlist.getPreviousItem(itemDAO.getItemByPath(playlist, selectedMedia.getValue()));
             if (previousItem != null) {
                 logger.info("Started the PREVIOUS media on the list");
@@ -269,6 +270,7 @@ public class Controller implements Initializable {
 
     private void playNextMedia() {
         Playlist playlist = playlistDAO.getPlaylistByName(selectedPlaylistName.getValue());
+        playlistDAO.updatePlaylistContents(playlist, itemDAO.getItemsByPlaylist(playlist));
         Item nextItem = playlist.getNextItem(itemDAO.getItemByPath(playlist, selectedMedia.getValue()));
         if (nextItem != null) {
             logger.info("Started the NEXT media on the list");
