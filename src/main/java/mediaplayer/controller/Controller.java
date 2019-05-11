@@ -309,6 +309,8 @@ public class Controller implements Initializable {
         setControls(mediaPlayer);
         mediaPlayer.play();
         playPauseButton.setImage(new Image(getClass().getResource("/icons/pause-button.png").toString()));
+        playlistController.updateMostPlayed();
+        itemDAO.flush();
     }
 
     @FXML

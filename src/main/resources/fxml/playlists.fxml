@@ -47,7 +47,7 @@
                   <Insets bottom="10.0" />
                </VBox.margin>
             </Text>
-            <ListView fx:id="listViewItem" onMouseClicked="#selectItem" prefWidth="500.0" />
+            <ListView fx:id="listViewItem" onMouseClicked="#selectItem" prefHeight="247.0" prefWidth="500.0" />
             <HBox spacing="10.0">
                <children>
                   <Button mnemonicParsing="false" onAction="#createItem" text="Import" />
@@ -57,6 +57,12 @@
                   <Insets top="10.0" />
                </VBox.margin>
             </HBox>
+            <Text fill="#cccccc" strokeType="OUTSIDE" strokeWidth="0.0" text="Most Played">
+               <VBox.margin>
+                  <Insets bottom="5.0" top="5.0" />
+               </VBox.margin>
+            </Text>
+            <ListView fx:id="listViewPlayed" onMouseClicked="#selectItem" prefHeight="126.0" prefWidth="500.0" />
          </children>
          <HBox.margin>
             <Insets left="10.0" />

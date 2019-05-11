@@ -53,6 +53,9 @@ public class PlaylistController implements Initializable {
     @FXML
     private ListView<String> listViewItem;
 
+    @FXML
+    private ListView<String> listViewPlayed;
+
     private PlaylistDAO playlistDAO;
     private ItemDAO itemDAO;
 
@@ -221,6 +224,7 @@ public class PlaylistController implements Initializable {
                                 .numberOfViews(0)
                                 .build());
                     }
+                    itemDAO.flush();
                 }
                 Playlist selectedPlaylist = playlistDAO.getPlaylistByName(selectedPlaylistName);
                 List<Item> items = itemDAO.getItemsByPlaylist(selectedPlaylist);
@@ -269,7 +273,7 @@ public class PlaylistController implements Initializable {
                 } else {
                     listViewItem.getItems().clear();
                 }
-
+                updateMostPlayed();
             } else {
                 logger.warn("No media has been selected");
             }
@@ -280,20 +284,34 @@ public class PlaylistController implements Initializable {
     private void selectItem(MouseEvent event) {
         if (event.getClickCount() == 2) {
             String selectedItemName = listViewItem.getSelectionModel().getSelectedItem();
+            String selectedPlayedName = listViewPlayed.getSelectionModel().getSelectedItem();
             if (selectedItemName != null) {
-                Playlist playlist = playlistDAO.getPlaylistByName(listViewPlaylist.getSelectionModel().getSelectedItem());
-                if (itemDAO.getItemsByPlaylist(playlist) != null) {
-                    logger.info("SELECTED " + selectedItemName + " from the playlist");
-                    List<Item> itemsOfSelectedPlaylist = itemDAO.getItemsByPlaylist(playlist);
-                    String selectedItemPath = itemsOfSelectedPlaylist.stream().filter(e -> e.getName().equals(selectedItemName))
-                            .map(Item::getPath).collect(Collectors.joining());
-                    selectedMedia.setValue(selectedItemPath);
-                    selectedIndex.setValue(listViewItem.getSelectionModel().getSelectedIndex());
-                }
+                select(selectedItemName);
+            } else if (selectedPlayedName != null) {
+                select(selectedPlayedName);
             } else {
                 logger.warn("No media has been selected");
             }
         }
+    }
+
+    private void select(String selectedItem) {
+        Playlist playlist = playlistDAO.getPlaylistByName(listViewPlaylist.getSelectionModel().getSelectedItem());
+        if (itemDAO.getItemsByPlaylist(playlist) != null) {
+            logger.info("SELECTED " + selectedItem + " from the playlist");
+            List<Item> itemsOfSelectedPlaylist = itemDAO.getItemsByPlaylist(playlist);
+            String selectedItemPath = itemsOfSelectedPlaylist.stream().filter(e -> e.getName().equals(selectedItem))
+                    .map(Item::getPath).collect(Collectors.joining());
+            selectedMedia.setValue(selectedItemPath);
+            selectedIndex.setValue(listViewItem.getSelectionModel().getSelectedIndex());
+            updateMostPlayed();
+        }
+    }
+
+    public void updateMostPlayed() {
+        Playlist playlist = playlistDAO.getPlaylistByName(listViewPlaylist.getSelectionModel().getSelectedItem());
+        ObservableList<String> mostPlayedList = FXCollections.observableArrayList(itemDAO.getMostPlayedFromPlaylist(playlist,5));
+        listViewPlayed.setItems(mostPlayedList);
     }
 
 }

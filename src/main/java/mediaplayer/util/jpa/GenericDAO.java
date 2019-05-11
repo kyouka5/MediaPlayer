@@ -54,4 +54,9 @@ public abstract class GenericDAO<T> {
         entityManager.merge(entity);
     }
 
+    @Transactional
+    public void flush() {
+        entityManager.flush();
+    }
+
 }

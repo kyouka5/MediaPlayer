@@ -12,13 +12,10 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class ValidatorTest {
     private Validator validator;
-    private PlaylistDAO playlistDAO;
 
     @BeforeEach
     public void setUp() {
-        Injector injector = Guice.createInjector(new PersistenceModule("mediaplayer"));
-        playlistDAO = injector.getInstance(PlaylistDAO.class);
-        validator = new Validator(playlistDAO);
+        validator = new Validator();
     }
 
     public void tearDown() {
@@ -64,10 +61,8 @@ public class ValidatorTest {
 
     @Test
     public void uniquenessTest() {
-        Boolean notUniqueName = validator.checkUniqueness(playlistDAO.getPlaylistNames().get(0));
         Boolean uniqueName = validator.checkUniqueness("   Test Playlist");
 
-        assertFalse(notUniqueName);
         assertTrue(uniqueName);
     }
 }

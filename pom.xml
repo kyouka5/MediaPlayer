@@ -261,7 +261,6 @@
                 <configuration>
                     <configLocation>src/main/resources/checkstyle.xml</configLocation>
                 </configuration>
-
             </plugin>
             <plugin>
                 <groupId>org.openclover</groupId>
