@@ -71,10 +71,10 @@ public class Controller implements Initializable {
     private ImageView albumCover;
 
     @FXML
-    private ImageView playPauseButton;
+    private ImageView playPauseButtonIcon;
 
     @FXML
-    private ImageView muteUnmuteButton;
+    private ImageView muteUnmuteButtonIcon;
 
     @FXML
     private Text itemName;
@@ -215,11 +215,11 @@ public class Controller implements Initializable {
             if (mediaPlayer.getStatus().equals(MediaPlayer.Status.PAUSED) || mediaPlayer.getStatus().equals(MediaPlayer.Status.STOPPED)) {
                 logger.info("The media player has been RESUMED");
                 mediaPlayer.play();
-                playPauseButton.setImage(new Image(getClass().getResource("/icons/pause-button.png").toString()));
+                playPauseButtonIcon.setImage(new Image(getClass().getResource("/icons/pause-button.png").toString()));
             } else {
                 logger.info("The media player has been PAUSED");
                 mediaPlayer.pause();
-                playPauseButton.setImage(new Image(getClass().getResource("/icons/play-button-1.png").toString()));
+                playPauseButtonIcon.setImage(new Image(getClass().getResource("/icons/play-button-1.png").toString()));
             }
         } else {
             logger.warn("Unable to PLAY or PAUSE - no media has been selected");
@@ -236,7 +236,7 @@ public class Controller implements Initializable {
         if (mediaPlayer != null) {
             logger.info("The media player has been STOPPED");
             mediaPlayer.stop();
-            playPauseButton.setImage(new Image(getClass().getResource("/icons/play-button-1.png").toString()));
+            playPauseButtonIcon.setImage(new Image(getClass().getResource("/icons/play-button-1.png").toString()));
         } else {
             logger.warn("Unable to STOP - no media has been selected");
         }
@@ -295,12 +295,12 @@ public class Controller implements Initializable {
         setControls(mediaPlayer);
         setMetadata(item);
         mediaPlayer.play();
-        playPauseButton.setImage(new Image(getClass().getResource("/icons/pause-button.png").toString()));
+        playPauseButtonIcon.setImage(new Image(getClass().getResource("/icons/pause-button.png").toString()));
         playlistController.updateMostPlayed();
     }
 
     private void setMetadata(Item item) {
-        if (item.getArtist() != null && item.getYear() != 0 && item.getAlbum() != null && item.getTitle() != null) {
+        if (item.getArtist() != null && item.getYear().getValue() != 0 && item.getAlbum() != null && item.getTitle() != null) {
             stage.setTitle(item.getArtist() + " < " + item.getYear() + " < " + item.getAlbum() + " < " + item.getTitle());
             itemName.setText(item.getTitle());
         } else {
@@ -326,11 +326,11 @@ public class Controller implements Initializable {
                 logger.info("The media player has been MUTED");
                 previousVolume = volumeSlider.valueProperty().intValue();
                 volumeSlider.setValue(0);
-                muteUnmuteButton.setImage(new Image(getClass().getResource("/icons/volume-level.png").toString()));
+                muteUnmuteButtonIcon.setImage(new Image(getClass().getResource("/icons/volume-level.png").toString()));
             } else {
                 logger.info("The media player has been UNMUTED");
                 volumeSlider.setValue(previousVolume);
-                muteUnmuteButton.setImage(new Image(getClass().getResource("/icons/speaker.png").toString()));
+                muteUnmuteButtonIcon.setImage(new Image(getClass().getResource("/icons/speaker.png").toString()));
             }
         } else {
             logger.warn("Unable to MUTE or UNMUTE - no media has been selected");

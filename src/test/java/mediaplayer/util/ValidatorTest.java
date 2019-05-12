@@ -1,9 +1,5 @@
 package mediaplayer.util;
 
-import com.google.inject.Guice;
-import com.google.inject.Injector;
-import mediaplayer.dao.PlaylistDAO;
-import mediaplayer.util.guice.PersistenceModule;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -24,11 +20,11 @@ public class ValidatorTest {
 
     @Test
     public void validationTest() {
-        Boolean validName = validator.checkPlaylistName("Hybrid Theory (2000)");
-        Boolean leadingWhitespaces = validator.checkPlaylistName("      Meteora");
-        Boolean whitespacesBoth = validator.checkPlaylistName("      Minutes To Midnight      ");
-        Boolean whitespacesOnly = validator.checkPlaylistName("          ");
-        Boolean tooLong = validator.checkPlaylistName("And when I close my eyes tonight, To symphonies of blinding light");
+        boolean validName = validator.checkPlaylistName("Hybrid Theory (2000)");
+        boolean leadingWhitespaces = validator.checkPlaylistName("      Meteora");
+        boolean whitespacesBoth = validator.checkPlaylistName("      Minutes To Midnight      ");
+        boolean whitespacesOnly = validator.checkPlaylistName("          ");
+        boolean tooLong = validator.checkPlaylistName("And when I close my eyes tonight, To symphonies of blinding light");
 
         assertTrue(validName);
         assertFalse(leadingWhitespaces);
@@ -39,9 +35,9 @@ public class ValidatorTest {
 
     @Test
     public void lengthTest() {
-        Boolean validName = validator.checkLength("Hybrid Theory (2000)");
-        Boolean tooShort = validator.checkLength("a");
-        Boolean tooLong = validator.checkLength("And when I close my eyes tonight, To symphonies of blinding light!");
+        boolean validName = validator.checkLength("Hybrid Theory (2000)");
+        boolean tooShort = validator.checkLength("a");
+        boolean tooLong = validator.checkLength("And when I close my eyes tonight, To symphonies of blinding light!");
 
         assertTrue(validName);
         assertFalse(tooShort);
@@ -50,9 +46,9 @@ public class ValidatorTest {
 
     @Test
     public void whitespaceTest() {
-        Boolean validName = validator.checkLength("A Thousand Suns");
-        Boolean leadingWhitespaces = validator.checkWhitespaces("      Meteora");
-        Boolean whitespacesBoth = validator.checkWhitespaces("      Minutes To Midnight      ");
+        boolean validName = validator.checkLength("A Thousand Suns");
+        boolean leadingWhitespaces = validator.checkWhitespaces("      Meteora");
+        boolean whitespacesBoth = validator.checkWhitespaces("      Minutes To Midnight      ");
 
         assertTrue(validName);
         assertFalse(leadingWhitespaces);
@@ -61,8 +57,9 @@ public class ValidatorTest {
 
     @Test
     public void uniquenessTest() {
-        Boolean uniqueName = validator.checkUniqueness("   Test Playlist");
-
+        boolean uniqueName = validator.checkUniqueness("      Meteora");
+        boolean uniqueName2 = validator.checkUniqueness("a");
         assertTrue(uniqueName);
+        assertTrue(uniqueName2);
     }
 }

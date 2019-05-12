@@ -56,7 +56,7 @@
                      </graphic></Button>
                   <Button id="button" contentDisplay="GRAPHIC_ONLY" mnemonicParsing="false" onAction="#playOrPauseMedia" stylesheets="@../style.css" text="Play / Pause">
                      <graphic>
-                        <ImageView fx:id="playPauseButton" fitWidth="19.0" opacity="0.8" pickOnBounds="true" preserveRatio="true">
+                        <ImageView fx:id="playPauseButtonIcon" fitWidth="19.0" opacity="0.8" pickOnBounds="true" preserveRatio="true">
                            <image>
                               <Image url="@../icons/play-button-1.png" />
                            </image>
@@ -124,7 +124,7 @@
                   <Separator opacity="0.0" HBox.hgrow="ALWAYS" />
                   <Button id="button" contentDisplay="GRAPHIC_ONLY" mnemonicParsing="false" onAction="#muteUnmuteMedia" stylesheets="@../style.css" text="Mute / Unmute">
                      <graphic>
-                        <ImageView fx:id="muteUnmuteButton" fitHeight="150.0" fitWidth="15.0" opacity="0.8" pickOnBounds="true" preserveRatio="true">
+                        <ImageView fx:id="muteUnmuteButtonIcon" fitHeight="150.0" fitWidth="15.0" opacity="0.8" pickOnBounds="true" preserveRatio="true">
                            <image>
                               <Image url="@../icons/speaker.png" />
                            </image>

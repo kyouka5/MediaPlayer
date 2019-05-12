@@ -4,8 +4,10 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import mediaplayer.util.jpa.YearConverter;
 
 import javax.persistence.*;
+import java.time.Year;
 
 /**
  * Class representing an item of a {@link Playlist}.
@@ -49,7 +51,8 @@ public class Item {
     /**
      * The release year of the item.
      */
-    private int year;
+    @Convert(converter = YearConverter.class)
+    private Year year;
 
     /**
      * The genre of the item.

@@ -15,6 +15,7 @@ import java.net.URI;
 import java.net.URL;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.Year;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.stream.Collectors;
@@ -208,7 +209,7 @@ public class PlaylistController implements Initializable {
                                     .title(tag.getFirst(FieldKey.TITLE))
                                     .artist(tag.getFirst(FieldKey.ARTIST))
                                     .album(tag.getFirst(FieldKey.ALBUM))
-                                    .year(tag.getFirst(FieldKey.YEAR).isEmpty() ? 0 : Integer.parseInt(tag.getFirst(FieldKey.YEAR)))
+                                    .year(tag.getFirst(FieldKey.YEAR).isEmpty() ? Year.of(0) : Year.of(Integer.parseInt(tag.getFirst(FieldKey.YEAR))))
                                     .genre(tag.getFirst(FieldKey.GENRE))
                                     .playlist(playlistDAO.getPlaylistByName(selectedPlaylistName))
                                     .numberOfViews(0)
@@ -223,7 +224,7 @@ public class PlaylistController implements Initializable {
                                 .title(null)
                                 .artist(null)
                                 .album(null)
-                                .year(0)
+                                .year(Year.of(0))
                                 .genre(null)
                                 .playlist(playlistDAO.getPlaylistByName(selectedPlaylistName))
                                 .numberOfViews(0)

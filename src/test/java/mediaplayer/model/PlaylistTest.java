@@ -37,6 +37,9 @@ public class PlaylistTest {
     @AfterEach
     public void tearDown() {
         playlist = null;
+        item1 = null;
+        item2 = null;
+        item3 = null;
     }
 
     @Test

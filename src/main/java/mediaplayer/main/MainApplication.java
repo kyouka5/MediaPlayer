@@ -16,14 +16,14 @@ public class MainApplication extends Application {
         FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/mediaplayer.fxml"));
         Parent root = loader.load();
         Controller controller = loader.getController();
-        FXMLLoader playlistloader = new FXMLLoader(getClass().getResource("/fxml/playlists.fxml"));
-        playlistloader.load();
-        controller.setPlaylistController(playlistloader.getController());
-        controller.setPlaylistRoot(playlistloader.getRoot());
+        FXMLLoader playlistLoader = new FXMLLoader(getClass().getResource("/fxml/playlists.fxml"));
+        playlistLoader.load();
+        controller.setPlaylistController(playlistLoader.getController());
+        controller.setPlaylistRoot(playlistLoader.getRoot());
+        controller.setStage(primaryStage);
         primaryStage.setTitle("Media Player");
         Scene scene = new Scene(root);
         primaryStage.setScene(scene);
-        controller.setStage(primaryStage);
         primaryStage.getIcons().add(new Image(getClass().getResource("/icons/music-note.png").toString()));
         primaryStage.show();
     }
