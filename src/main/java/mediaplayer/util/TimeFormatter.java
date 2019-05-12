@@ -7,7 +7,7 @@ import javafx.util.Duration;
  */
 public class TimeFormatter {
     /**
-     * Converts the given {@link Duration} to hh:mm:ss or mm:ss format.
+     * Converts the given {@link Duration} to {@code hh:mm:ss} or {@code mm:ss} format.
      * @param time the time in milliseconds
      * @return the formatted time
      */
