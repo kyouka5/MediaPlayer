@@ -30,7 +30,7 @@
         <maven.compiler.target>11</maven.compiler.target>
         <exec.cleanupDaemonThreads>false</exec.cleanupDaemonThreads>
         <dependency.locations.enabled>false</dependency.locations.enabled>
-        <exec.mainClass>main.Main</exec.mainClass>
+        <exec.mainClass>mediaplayer.main.Main</exec.mainClass>
     </properties>
 
     <dependencies>
@@ -155,9 +155,6 @@
                         </goals>
                     </execution>
                 </executions>
-                <configuration>
-                    <mainClass>${exec.mainClass}</mainClass>
-                </configuration>
             </plugin>
             <plugin>
                 <groupId>org.openclover</groupId>
