@@ -55,24 +55,35 @@ public class PlaylistController implements Initializable {
     private ListView<String> listViewItem;
 
     @FXML
-    private ListView<String> listViewPlayed;
+    private ListView<String> listViewMostPlayed;
 
     private PlaylistDAO playlistDAO;
     private ItemDAO itemDAO;
 
     private Validator validator = new Validator();
 
-    private static Logger logger = LoggerFactory.getLogger(Controller.class);
+    private static Logger logger = LoggerFactory.getLogger(PlaylistController.class);
 
-    private ObjectProperty<String> selectedMedia = new SimpleObjectProperty<>();
+    /**
+     * The currently selected item.
+     */
+    private ObjectProperty<String> selectedItem = new SimpleObjectProperty<>();
+
+    /**
+     * The index of the currently selected item.
+     */
     private ObjectProperty<Integer> selectedIndex = new SimpleObjectProperty<>();
+
+    /**
+     * The name of the currently selected playlist.
+     */
     private ObjectProperty<String> selectedPlaylistName = new SimpleObjectProperty<>();
 
-    public ObjectProperty<String> selectedFile() {
-        return selectedMedia;
+    public ObjectProperty<String> getSelectedItem() {
+        return selectedItem;
     }
 
-    public ObjectProperty<String> selectedPlaylistName() {
+    public ObjectProperty<String> getSelectedPlaylistName() {
         return selectedPlaylistName;
     }
 
@@ -86,15 +97,19 @@ public class PlaylistController implements Initializable {
         loadPlaylists();
     }
 
+    /**
+     * Checks if there are any files in the database which are no longer available and deletes them.
+     */
     private void removeUnavailableFiles() {
         List<String> pathsNotFound = new ArrayList<>();
+        List<String> pathsInDatabase = itemDAO.getAllPaths();
 
-        for (int i = 0; i < itemDAO.getAllPaths().size(); i++) {
-            URI uriOfPath = URI.create(itemDAO.getAllPaths().get(i));
+        for (int i = 0; i < pathsInDatabase.size(); i++) {
+            URI uriOfPath = URI.create(pathsInDatabase.get(i));
             String uriPathToString = Paths.get(uriOfPath).toString();
             Path path = Paths.get(uriPathToString);
             if (!path.toFile().exists()) {
-                pathsNotFound.add(itemDAO.getAllPaths().get(i));
+                pathsNotFound.add(pathsInDatabase.get(i));
             }
         }
 
@@ -106,6 +121,9 @@ public class PlaylistController implements Initializable {
         }
     }
 
+    /**
+     * Alerts the user that some unavailable files has been deleted.
+     */
     private void alertUnavailableFiles() {
         Alert alert = new Alert(Alert.AlertType.ERROR);
         alert.setTitle("Error");
@@ -114,10 +132,14 @@ public class PlaylistController implements Initializable {
         alert.showAndWait();
     }
 
+    /**
+     * Populates the {@link ListView} of playlists with the currently available {@link Playlist}s.
+     */
     private void loadPlaylists() {
         ObservableList<String> playlistNames = FXCollections.observableArrayList(playlistDAO.getPlaylistNames());
         listViewPlaylist.setItems(playlistNames);
     }
+
 
     @FXML
     private void createPlaylist(javafx.event.ActionEvent event) {
@@ -161,6 +183,9 @@ public class PlaylistController implements Initializable {
         }
     }
 
+    /**
+     * Alerts the user that the playlist name they entered is invalid.
+     */
     private void alertInvalidPlaylistName() {
         Alert alert = new Alert(Alert.AlertType.ERROR);
         alert.setTitle("Error");
@@ -289,7 +314,7 @@ public class PlaylistController implements Initializable {
     private void selectItem(MouseEvent event) {
         if (event.getClickCount() == 2) {
             String selectedItemName = listViewItem.getSelectionModel().getSelectedItem();
-            String selectedMostPlayedName = listViewPlayed.getSelectionModel().getSelectedItem();
+            String selectedMostPlayedName = listViewMostPlayed.getSelectionModel().getSelectedItem();
             if (selectedItemName != null) {
                 logger.info("SELECTED " + selectedItemName + " from the playlist");
                 select(selectedItemName);
@@ -302,22 +327,29 @@ public class PlaylistController implements Initializable {
         }
     }
 
+    /**
+     * Selects an {@link Item} to play and sets the value of {@code selectedItem} and {@code selectedIndex} accordingly.
+     * @param selectedItem the name of the currently selected {@link Item}
+     */
     private void select(String selectedItem) {
         Playlist playlist = playlistDAO.getPlaylistByName(listViewPlaylist.getSelectionModel().getSelectedItem());
         if (itemDAO.getItemsByPlaylist(playlist) != null) {
             List<Item> itemsOfSelectedPlaylist = itemDAO.getItemsByPlaylist(playlist);
             String selectedItemPath = itemsOfSelectedPlaylist.stream().filter(e -> e.getName().equals(selectedItem))
                     .map(Item::getPath).collect(Collectors.joining());
-            selectedMedia.setValue(selectedItemPath);
+            this.selectedItem.setValue(selectedItemPath);
             selectedIndex.setValue(listViewItem.getSelectionModel().getSelectedIndex());
             updateMostPlayed();
         }
     }
 
+    /**
+     * Populates the {@link ListView} of most played items with the top 5 {@link Item}s based on their number of views.
+     */
     public void updateMostPlayed() {
         Playlist playlist = playlistDAO.getPlaylistByName(listViewPlaylist.getSelectionModel().getSelectedItem());
         ObservableList<String> mostPlayedList = FXCollections.observableArrayList(itemDAO.getMostPlayedFromPlaylist(playlist, 5));
-        listViewPlayed.setItems(mostPlayedList);
+        listViewMostPlayed.setItems(mostPlayedList);
     }
 
 }

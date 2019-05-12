@@ -87,12 +87,19 @@ public class Controller implements Initializable {
 
     private PlaylistController playlistController;
 
-    private Scene playlistScene;
+    private Parent playlistRoot;
 
     private PlaylistDAO playlistDAO;
     private ItemDAO itemDAO;
 
-    private ObjectProperty<String> selectedMedia = new SimpleObjectProperty<>();
+    /**
+     * The name of the currently selected item.
+     */
+    private ObjectProperty<String> selectedItem = new SimpleObjectProperty<>();
+
+    /**
+     * The name of the currently selected playlist.
+     */
     private ObjectProperty<String> selectedPlaylistName = new SimpleObjectProperty<>();
 
     private static Logger logger = LoggerFactory.getLogger(Controller.class);
@@ -107,7 +114,7 @@ public class Controller implements Initializable {
     }
 
     public void setPlaylistRoot(Parent playlistRoot) {
-        playlistScene = new Scene(playlistRoot);
+        this.playlistRoot = playlistRoot;
     }
 
     @Override
@@ -116,7 +123,7 @@ public class Controller implements Initializable {
         playlistDAO = injector.getInstance(PlaylistDAO.class);
         itemDAO = injector.getInstance(ItemDAO.class);
 
-        selectedMedia.addListener((observable, oldValue, newValue) -> {
+        selectedItem.addListener((observable, oldValue, newValue) -> {
             if (newValue != null) {
                 playItem(newValue);
             }
@@ -134,6 +141,10 @@ public class Controller implements Initializable {
         });
     }
 
+    /**
+     * Sets volume controls and duration controls.
+     * @param mediaPlayer the {@link MediaPlayer} to be set
+     */
     private void setControls(MediaPlayer mediaPlayer) {
         fitToSize();
 
@@ -192,6 +203,9 @@ public class Controller implements Initializable {
 
     }
 
+    /**
+     * Fits the size of the media to the size of the media player.
+     */
     private void fitToSize() {
         DoubleProperty width = mediaView.fitWidthProperty();
         DoubleProperty height = mediaView.fitHeightProperty();
@@ -199,6 +213,9 @@ public class Controller implements Initializable {
         height.bind(Bindings.selectDouble(mediaView.sceneProperty(), "height").subtract(menuBar.getHeight()).subtract(durationSlider.getHeight()));
     }
 
+    /**
+     * Updates the elapsed time of the currently playing media.
+     */
     private void updateTime() {
         if (mediaPlayer != null) {
             Platform.runLater(new Runnable() {
@@ -247,10 +264,10 @@ public class Controller implements Initializable {
         if (mediaPlayer != null) {
             Playlist playlist = playlistDAO.getPlaylistByName(selectedPlaylistName.getValue());
             playlistDAO.updatePlaylistContents(playlist, itemDAO.getItemsByPlaylist(playlist));
-            Item previousItem = playlist.getPreviousItem(itemDAO.getItemByPath(playlist, selectedMedia.getValue()));
+            Item previousItem = playlist.getPreviousItem(itemDAO.getItemByPath(playlist, selectedItem.getValue()));
             if (previousItem != null) {
                 logger.info("Started the PREVIOUS media on the list");
-                selectedMedia.set(previousItem.getPath());
+                selectedItem.set(previousItem.getPath());
             } else {
                 logger.info("This is the FIRST media on the playlist, hence it is not possible to get the previous one");
             }
@@ -271,16 +288,21 @@ public class Controller implements Initializable {
     private void playNextMedia() {
         Playlist playlist = playlistDAO.getPlaylistByName(selectedPlaylistName.getValue());
         playlistDAO.updatePlaylistContents(playlist, itemDAO.getItemsByPlaylist(playlist));
-        Item nextItem = playlist.getNextItem(itemDAO.getItemByPath(playlist, selectedMedia.getValue()));
+        Item nextItem = playlist.getNextItem(itemDAO.getItemByPath(playlist, selectedItem.getValue()));
         if (nextItem != null) {
             logger.info("Started the NEXT media on the list");
-            selectedMedia.set(nextItem.getPath());
+            selectedItem.set(nextItem.getPath());
         } else {
             mediaPlayer.stop();
             logger.info("This is the LAST media on the playlist, hence it is not possible to get the next one");
         }
     }
 
+    /**
+     * Sets an {@link Item} to play.
+     *
+     * @param path the path of the selected {@link Item}.
+     */
     private void playItem(String path) {
         logger.info("Set to play: " + path);
         if (mediaPlayer != null) {
@@ -299,6 +321,11 @@ public class Controller implements Initializable {
         playlistController.updateMostPlayed();
     }
 
+    /**
+     * Sets the metadata of an {@link Item} if it is available.
+     *
+     * @param item the {@link Item} to be played
+     */
     private void setMetadata(Item item) {
         if (item.getArtist() != null && item.getYear().getValue() != 0 && item.getAlbum() != null && item.getTitle() != null) {
             stage.setTitle(item.getArtist() + " < " + item.getYear() + " < " + item.getAlbum() + " < " + item.getTitle());
@@ -373,13 +400,13 @@ public class Controller implements Initializable {
     private void showPlaylists(javafx.event.ActionEvent event) {
         logger.info("Opened the playlist management window");
         Stage stage = new Stage();
-        stage.setScene(playlistScene);
+        stage.setScene(new Scene(playlistRoot));
         stage.setResizable(false);
         stage.setTitle("Manage playlists");
         stage.getIcons().add(new Image(getClass().getResource("/icons/music-note.png").toString()));
         stage.show();
-        Bindings.bindBidirectional(selectedMedia, playlistController.selectedFile());
-        Bindings.bindBidirectional(selectedPlaylistName, playlistController.selectedPlaylistName());
+        Bindings.bindBidirectional(selectedItem, playlistController.getSelectedItem());
+        Bindings.bindBidirectional(selectedPlaylistName, playlistController.getSelectedPlaylistName());
 
     }
 

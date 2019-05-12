@@ -2,7 +2,15 @@ package mediaplayer.util;
 
 import javafx.util.Duration;
 
+/**
+ * Class to format time.
+ */
 public class TimeFormatter {
+    /**
+     * Converts the given {@link Duration} to hh:mm:ss or mm:ss format.
+     * @param time the time in milliseconds
+     * @return the formatted time
+     */
     public String timeToString(Duration time) {
             int hours = (int) time.toHours();
             int minutes = (int) time.toMinutes() - hours * 60;

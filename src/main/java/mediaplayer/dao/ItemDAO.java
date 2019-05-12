@@ -70,6 +70,12 @@ public class ItemDAO extends GenericDAO {
         entityManager.remove(query.getResultList().get(0));
     }
 
+    /**
+     * Gets the {@link Item}s with the greatest number of views from the given {@link Playlist}.
+     * @param playlist the {@link Playlist} to be inspected
+     * @param n the number of {@link Item}s to be returned
+     * @return the list of {@link Item} names
+     */
     public List<String> getMostPlayedFromPlaylist(Playlist playlist, int n) {
         return entityManager.createQuery("select i.name from Item i where " + playlist.getId() + " = i.playlist.id and i.numberOfViews > 0 order by i.numberOfViews desc", String.class).setMaxResults(n).getResultList();
     }

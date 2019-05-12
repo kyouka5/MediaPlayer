@@ -62,7 +62,7 @@
                   <Insets bottom="5.0" top="5.0" />
                </VBox.margin>
             </Text>
-            <ListView fx:id="listViewPlayed" onMouseClicked="#selectItem" prefHeight="126.0" prefWidth="500.0" />
+            <ListView fx:id="listViewMostPlayed" onMouseClicked="#selectItem" prefHeight="126.0" prefWidth="500.0" />
          </children>
          <HBox.margin>
             <Insets left="10.0" />
