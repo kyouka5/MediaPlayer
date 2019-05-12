@@ -11,6 +11,7 @@ java -jar target/mediaplayer-1.0.jar
 ```
 or
 ```
+mvn compile
 mvn exec:java 
 ```
 
