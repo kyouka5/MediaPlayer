@@ -21,8 +21,9 @@ public class PlaylistDAO extends GenericDAO {
 
     /**
      * Updates the {@code name} of the {@link Playlist}.
+     *
      * @param playlist the {@link Playlist} to be updated
-     * @param name the new name
+     * @param name     the new name
      */
     @Transactional
     public void updatePlaylistName(Playlist playlist, String name) {
@@ -31,17 +32,21 @@ public class PlaylistDAO extends GenericDAO {
 
     /**
      * Updates the {@code contents} of the {@link Playlist}.
+     *
      * @param playlist the {@link Playlist} to be updated
      * @param contents the new contents
      */
     @Transactional
     public void updatePlaylistContents(Playlist playlist, List<Item> contents) {
-        playlist.getContents().clear();
-        playlist.getContents().addAll(contents);
+        if (playlist != null && contents != null) {
+            playlist.getContents().clear();
+            playlist.getContents().addAll(contents);
+        }
     }
 
     /**
      * Gets all the {@link Playlist} names from the database.
+     *
      * @return the list of {@link Playlist} names
      */
     public List<String> getPlaylistNames() {
@@ -51,6 +56,7 @@ public class PlaylistDAO extends GenericDAO {
 
     /**
      * Gets a {@link Playlist} by its {@code name}.
+     *
      * @param name the name of the {@link Playlist}
      * @return the {@link Playlist} found, or {@code null} if it does not exists
      */

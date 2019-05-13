@@ -27,6 +27,7 @@ public class Validator {
 
     /**
      * Checks if the given {@code playlist name} meets all the criteria to be considered as valid.
+     *
      * @param playlistName the name to be checked
      * @return whether the {@code playlist name} is valid or not
      */
@@ -36,6 +37,7 @@ public class Validator {
 
     /**
      * Checks if the given {@code playlist name} is valid. A {@code playlist name} is considered to be valid if it is between 2 and 50 characters.
+     *
      * @param playlistName the name to be checked
      * @return whether the {@code playlist name} is valid or not
      */
@@ -45,6 +47,7 @@ public class Validator {
 
     /**
      * Checks if the given {@code playlist name} is valid. A {@code playlist name} is considered to be valid if it contains neither leading nor trailing whitespaces.
+     *
      * @param playlistName the name to be checked
      * @return whether the {@code playlist name} is valid or not
      */
@@ -54,6 +57,7 @@ public class Validator {
 
     /**
      * Checks if the given {@code playlist name} is valid. A {@code playlist name} is considered valid if no other playlist exists with the same name.
+     *
      * @param playlistName the name to be checked
      * @return whether the {@code playlist name} is valid or not
      */

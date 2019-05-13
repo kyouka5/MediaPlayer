@@ -33,7 +33,7 @@ public class Playlist {
     /**
      * The {@link Item}s of a playlist.
      */
-    @OneToMany(fetch = FetchType.EAGER, mappedBy = "playlist", orphanRemoval=true)
+    @OneToMany(fetch = FetchType.EAGER, mappedBy = "playlist", orphanRemoval = true)
     private List<Item> contents;
 
     /**
@@ -49,6 +49,7 @@ public class Playlist {
 
     /**
      * Gets the next {@link Item} of the playlist.
+     *
      * @param currentlyPlaying the {@link Item} which is currently playing
      * @return the next {@link Item} of the playlist
      */
@@ -63,6 +64,7 @@ public class Playlist {
 
     /**
      * Gets the previous {@link Item} of the playlist.
+     *
      * @param currentlyPlaying the {@link Item} which is currently playing
      * @return the previous {@link Item} of the playlist
      */

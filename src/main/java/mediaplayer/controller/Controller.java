@@ -88,6 +88,7 @@ public class Controller implements Initializable {
     private PlaylistController playlistController;
 
     private Parent playlistRoot;
+    private Stage playlistStage;
 
     private PlaylistDAO playlistDAO;
     private ItemDAO itemDAO;
@@ -143,6 +144,7 @@ public class Controller implements Initializable {
 
     /**
      * Sets volume controls and duration controls.
+     *
      * @param mediaPlayer the {@link MediaPlayer} to be set
      */
     private void setControls(MediaPlayer mediaPlayer) {
@@ -229,9 +231,12 @@ public class Controller implements Initializable {
 
     private void playOrPauseMedia() {
         if (mediaPlayer != null) {
-            if (mediaPlayer.getStatus().equals(MediaPlayer.Status.PAUSED) || mediaPlayer.getStatus().equals(MediaPlayer.Status.STOPPED)) {
+            if (mediaPlayer.getStatus().equals(MediaPlayer.Status.PAUSED)) {
                 logger.info("The media player has been RESUMED");
                 mediaPlayer.play();
+                playPauseButtonIcon.setImage(new Image(getClass().getResource("/icons/pause-button.png").toString()));
+            } else if (mediaPlayer.getStatus().equals(MediaPlayer.Status.STOPPED)) {
+                playItem(mediaPlayer.getMedia().getSource());
                 playPauseButtonIcon.setImage(new Image(getClass().getResource("/icons/pause-button.png").toString()));
             } else {
                 logger.info("The media player has been PAUSED");
@@ -263,13 +268,17 @@ public class Controller implements Initializable {
     private void previousMedia(javafx.event.ActionEvent event) {
         if (mediaPlayer != null) {
             Playlist playlist = playlistDAO.getPlaylistByName(selectedPlaylistName.getValue());
-            playlistDAO.updatePlaylistContents(playlist, itemDAO.getItemsByPlaylist(playlist));
-            Item previousItem = playlist.getPreviousItem(itemDAO.getItemByPath(playlist, selectedItem.getValue()));
-            if (previousItem != null) {
-                logger.info("Started the PREVIOUS media on the list");
-                selectedItem.set(previousItem.getPath());
+            if (playlist != null) {
+                playlistDAO.updatePlaylistContents(playlist, itemDAO.getItemsByPlaylist(playlist));
+                Item previousItem = playlist.getPreviousItem(itemDAO.getItemByPath(playlist, selectedItem.getValue()));
+                if (previousItem != null) {
+                    logger.info("Started the PREVIOUS media on the list");
+                    selectedItem.set(previousItem.getPath());
+                } else {
+                    logger.info("This is the FIRST media on the playlist, hence it is not possible to get the previous one");
+                }
             } else {
-                logger.info("This is the FIRST media on the playlist, hence it is not possible to get the previous one");
+                logger.info("This playlist does not exist anymore.");
             }
         } else {
             logger.warn("Unable to play the PREVIOUS media - no media has been selected");
@@ -287,14 +296,18 @@ public class Controller implements Initializable {
 
     private void playNextMedia() {
         Playlist playlist = playlistDAO.getPlaylistByName(selectedPlaylistName.getValue());
-        playlistDAO.updatePlaylistContents(playlist, itemDAO.getItemsByPlaylist(playlist));
-        Item nextItem = playlist.getNextItem(itemDAO.getItemByPath(playlist, selectedItem.getValue()));
-        if (nextItem != null) {
-            logger.info("Started the NEXT media on the list");
-            selectedItem.set(nextItem.getPath());
+        if (playlist != null) {
+            playlistDAO.updatePlaylistContents(playlist, itemDAO.getItemsByPlaylist(playlist));
+            Item nextItem = playlist.getNextItem(itemDAO.getItemByPath(playlist, selectedItem.getValue()));
+            if (nextItem != null) {
+                logger.info("Started the NEXT media on the list");
+                selectedItem.set(nextItem.getPath());
+            } else {
+                mediaPlayer.stop();
+                logger.info("This is the LAST media on the playlist, hence it is not possible to get the next one");
+            }
         } else {
-            mediaPlayer.stop();
-            logger.info("This is the LAST media on the playlist, hence it is not possible to get the next one");
+            logger.info("This playlist does not exist anymore.");
         }
     }
 
@@ -304,21 +317,25 @@ public class Controller implements Initializable {
      * @param path the path of the selected {@link Item}.
      */
     private void playItem(String path) {
-        logger.info("Set to play: " + path);
         if (mediaPlayer != null) {
             mediaPlayer.dispose();
         }
         Media media = new Media(path);
         mediaPlayer = new MediaPlayer(media);
         Item item = itemDAO.getItemByPath(playlistDAO.getPlaylistByName(selectedPlaylistName.getValue()), path);
-        item.incrementViews();
-        itemDAO.update(item);
-        mediaView.setMediaPlayer(mediaPlayer);
-        setControls(mediaPlayer);
-        setMetadata(item);
-        mediaPlayer.play();
-        playPauseButtonIcon.setImage(new Image(getClass().getResource("/icons/pause-button.png").toString()));
-        playlistController.updateMostPlayed();
+        if (item != null) {
+            logger.info("Set to play: " + path);
+            item.incrementViews();
+            itemDAO.update(item);
+            mediaView.setMediaPlayer(mediaPlayer);
+            setControls(mediaPlayer);
+            setMetadata(item);
+            mediaPlayer.play();
+            playPauseButtonIcon.setImage(new Image(getClass().getResource("/icons/pause-button.png").toString()));
+            playlistController.updateMostPlayed();
+        } else {
+            logger.info("This playlist does not exist anymore.");
+        }
     }
 
     /**
@@ -398,15 +415,20 @@ public class Controller implements Initializable {
 
     @FXML
     private void showPlaylists(javafx.event.ActionEvent event) {
-        logger.info("Opened the playlist management window");
-        Stage stage = new Stage();
-        stage.setScene(new Scene(playlistRoot));
-        stage.setResizable(false);
-        stage.setTitle("Manage playlists");
-        stage.getIcons().add(new Image(getClass().getResource("/icons/music-note.png").toString()));
-        stage.show();
-        Bindings.bindBidirectional(selectedItem, playlistController.getSelectedItem());
-        Bindings.bindBidirectional(selectedPlaylistName, playlistController.getSelectedPlaylistName());
+        if (playlistStage == null) {
+            logger.info("Opened the playlist management window");
+            playlistStage = new Stage();
+            playlistStage.setScene(new Scene(playlistRoot));
+            playlistStage.setResizable(false);
+            playlistStage.setTitle("Manage playlists");
+            playlistStage.getIcons().add(new Image(getClass().getResource("/icons/music-note.png").toString()));
+            playlistStage.show();
+            Bindings.bindBidirectional(selectedItem, playlistController.getSelectedItem());
+            Bindings.bindBidirectional(selectedPlaylistName, playlistController.getSelectedPlaylistName());
+        } else {
+            playlistStage.toFront();
+            logger.info("The playlist management window is already open.");
+        }
 
     }
 

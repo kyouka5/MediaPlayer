@@ -161,16 +161,18 @@ public class PlaylistController implements Initializable {
 
     @FXML
     private void updatePlaylist(javafx.event.ActionEvent event) {
-        String selectedPlaylistName = listViewPlaylist.getSelectionModel().getSelectedItem();
-        if (selectedPlaylistName != null) {
+        String selected = listViewPlaylist.getSelectionModel().getSelectedItem();
+        if (selected != null) {
             if (playlistNameField != null) {
                 String playlistName = playlistNameField.getText();
                 boolean isNameValid = validator.checkPlaylistName(playlistName);
                 if (isNameValid) {
-                    Playlist playlist = playlistDAO.getPlaylistByName(selectedPlaylistName);
+                    Playlist playlist = playlistDAO.getPlaylistByName(selected);
                     playlistDAO.updatePlaylistName(playlist, playlistName);
-                    logger.info("Playlist " + selectedPlaylistName + " has been RENAMED to " + playlistName);
+                    logger.info("Playlist " + selected + " has been RENAMED to " + playlistName);
                     listViewPlaylist.getItems().set(listViewPlaylist.getSelectionModel().getSelectedIndex(), playlistName);
+                    listViewPlaylist.getSelectionModel().select(-1);
+                    clearItemsAndMostPlayed();
                 } else {
                     alertInvalidPlaylistName();
                 }
@@ -205,13 +207,13 @@ public class PlaylistController implements Initializable {
             playlistDAO.remove(playlist);
             logger.info("Playlist " + playlist.getName() + " has been REMOVED");
             listViewPlaylist.getItems().remove(listViewPlaylist.getSelectionModel().getSelectedIndex());
+            clearItemsAndMostPlayed();
             loadPlaylists();
         } else {
             logger.warn("No playlist has been selected");
         }
 
     }
-
 
     @FXML
     private void createItem(javafx.event.ActionEvent event) {
@@ -295,19 +297,22 @@ public class PlaylistController implements Initializable {
             if (selectedPlaylistName != null) {
                 logger.info("SELECTED the playlist " + selectedPlaylistName.getValue());
                 Playlist playlist = playlistDAO.getPlaylistByName(selectedPlaylistName.getValue());
-                if (!playlist.getContents().isEmpty()) {
-                    List<Item> itemsOfSelectedPlaylist = itemDAO.getItemsByPlaylist(playlist);
-                    ObservableList<String> itemNames = FXCollections.observableArrayList(itemsOfSelectedPlaylist
-                            .stream().map(Item::getName).collect(Collectors.toList()));
-                    listViewItem.setItems(itemNames);
-                } else {
-                    listViewItem.getItems().clear();
-                }
-                updateMostPlayed();
+                showPlaylistContents(playlist);
             } else {
                 logger.warn("No media has been selected");
             }
         }
+    }
+
+    private void showPlaylistContents(Playlist playlist) {
+        clearItemsAndMostPlayed();
+        if (!playlist.getContents().isEmpty()) {
+            List<Item> itemsOfSelectedPlaylist = itemDAO.getItemsByPlaylist(playlist);
+            ObservableList<String> itemNames = FXCollections.observableArrayList(itemsOfSelectedPlaylist
+                    .stream().map(Item::getName).collect(Collectors.toList()));
+            listViewItem.setItems(itemNames);
+        }
+        updateMostPlayed();
     }
 
     @FXML
@@ -329,18 +334,23 @@ public class PlaylistController implements Initializable {
 
     /**
      * Selects an {@link Item} to play and sets the value of {@code selectedItem} and {@code selectedIndex} accordingly.
-     * @param selectedItem the name of the currently selected {@link Item}
+     *
+     * @param selectedItemName the name of the currently selected {@link Item}
      */
-    private void select(String selectedItem) {
+    private void select(String selectedItemName) {
         Playlist playlist = playlistDAO.getPlaylistByName(listViewPlaylist.getSelectionModel().getSelectedItem());
         if (itemDAO.getItemsByPlaylist(playlist) != null) {
-            List<Item> itemsOfSelectedPlaylist = itemDAO.getItemsByPlaylist(playlist);
-            String selectedItemPath = itemsOfSelectedPlaylist.stream().filter(e -> e.getName().equals(selectedItem))
-                    .map(Item::getPath).collect(Collectors.joining());
-            this.selectedItem.setValue(selectedItemPath);
+            itemDAO.getPathByItemName(selectedItemName);
+            String selectedItemPath = itemDAO.getPathByItemName(selectedItemName);
+            selectedItem.setValue(selectedItemPath);
             selectedIndex.setValue(listViewItem.getSelectionModel().getSelectedIndex());
             updateMostPlayed();
         }
+    }
+
+    private void clearItemsAndMostPlayed() {
+        listViewItem.getItems().clear();
+        listViewMostPlayed.getItems().clear();
     }
 
     /**
