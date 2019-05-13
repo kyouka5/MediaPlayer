@@ -1,5 +1,6 @@
 package mediaplayer.util;
 
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -14,6 +15,7 @@ public class ValidatorTest {
         validator = new Validator();
     }
 
+    @AfterEach
     public void tearDown() {
         validator = null;
     }
