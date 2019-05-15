@@ -433,6 +433,7 @@ public class Controller implements Initializable {
             Bindings.bindBidirectional(selectedItem, playlistController.getSelectedItem());
             Bindings.bindBidirectional(selectedPlaylistName, playlistController.getSelectedPlaylistName());
         } else {
+            playlistStage.show();
             playlistStage.toFront();
             logger.info("The playlist management window is already open.");
         }
