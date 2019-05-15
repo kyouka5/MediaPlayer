@@ -270,6 +270,11 @@ public class Controller implements Initializable {
             Playlist playlist = playlistDAO.getPlaylistByName(selectedPlaylistName.getValue());
             if (playlist != null) {
                 playlistDAO.updatePlaylistContents(playlist, itemDAO.getItemsByPlaylist(playlist));
+                if (shuffleToggle.isSelected()) {
+                    playlist.shufflePlaylist();
+                } else {
+                    playlist.unshufflePlaylist();
+                }
                 Item previousItem = playlist.getPreviousItem(itemDAO.getItemByPath(playlist, selectedItem.getValue()));
                 if (previousItem != null) {
                     logger.info("Started the PREVIOUS media on the list");
@@ -298,6 +303,11 @@ public class Controller implements Initializable {
         Playlist playlist = playlistDAO.getPlaylistByName(selectedPlaylistName.getValue());
         if (playlist != null) {
             playlistDAO.updatePlaylistContents(playlist, itemDAO.getItemsByPlaylist(playlist));
+            if (shuffleToggle.isSelected()) {
+                playlist.shufflePlaylist();
+            } else {
+                playlist.unshufflePlaylist();
+            }
             Item nextItem = playlist.getNextItem(itemDAO.getItemByPath(playlist, selectedItem.getValue()));
             if (nextItem != null) {
                 logger.info("Started the NEXT media on the list");
@@ -383,13 +393,10 @@ public class Controller implements Initializable {
 
     @FXML
     private void shuffle(javafx.event.ActionEvent event) {
-        Playlist playlist = playlistDAO.getPlaylistByName(selectedPlaylistName.getValue());
         if (shuffleToggle.isSelected()) {
             logger.info("Shuffle ON");
-            playlist.shufflePlaylist();
         } else {
             logger.info("Shuffle OFF");
-            playlist.unshufflePlaylist();
         }
     }
 

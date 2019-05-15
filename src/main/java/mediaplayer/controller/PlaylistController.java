@@ -273,16 +273,18 @@ public class PlaylistController implements Initializable {
 
     @FXML
     private void deleteItem(javafx.event.ActionEvent event) {
+        String selectedPlaylistName = listViewPlaylist.getSelectionModel().getSelectedItem();
         String selectedItemName = listViewItem.getSelectionModel().getSelectedItem();
-        if (selectedItemName != null) {
-            Playlist playlist = playlistDAO.getPlaylistByName(selectedItemName);
+        if (selectedPlaylistName != null) {
+            Playlist playlist = playlistDAO.getPlaylistByName(selectedPlaylistName);
             if (playlist.getContents().size() >= 2) {
                 itemDAO.removeItemFromPlaylistByName(playlist, selectedItemName);
-                logger.info("REMOVED " + selectedItemName + " from the playlist");
+                logger.info("REMOVED " + selectedPlaylistName + " from the playlist");
                 listViewItem.getItems().remove(listViewItem.getSelectionModel().getSelectedIndex());
             } else {
                 playlistDAO.remove(playlist);
             }
+            updateMostPlayed();
             loadPlaylists();
         } else {
             logger.warn("No media has been selected");
