@@ -65,6 +65,19 @@ public class ItemDAO extends GenericDAO {
     }
 
     /**
+     * Gets the {@link Item} from the given {@link Playlist} with the given {@code name}.
+     *
+     * @param playlist the {@link Playlist} containing the {@link Item}
+     * @param name     the name of the {@link Item}
+     * @return the item found
+     */
+    @Transactional
+    public Item getItemFromPlaylistByName(Playlist playlist, String name) {
+        TypedQuery<Item> query = entityManager.createQuery("select i from Item i where i.name ='" + name + "' and " + playlist.getId() + " = i.playlist.id", Item.class);
+        return query.getResultList().get(0);
+    }
+
+    /**
      * Gets all the paths of {@link Item}s which are currently in the database.
      *
      * @return the list of paths

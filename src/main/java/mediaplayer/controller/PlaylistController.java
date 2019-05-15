@@ -276,19 +276,23 @@ public class PlaylistController implements Initializable {
         String selectedPlaylistName = listViewPlaylist.getSelectionModel().getSelectedItem();
         String selectedItemName = listViewItem.getSelectionModel().getSelectedItem();
         if (selectedPlaylistName != null) {
-            Playlist playlist = playlistDAO.getPlaylistByName(selectedPlaylistName);
-            if (playlist.getContents().size() >= 2) {
-                itemDAO.removeItemFromPlaylistByName(playlist, selectedItemName);
-                playlist.setContents(itemDAO.getItemsByPlaylist(playlist));
-                logger.info("REMOVED " + selectedPlaylistName + " from the playlist");
-                listViewItem.getItems().remove(listViewItem.getSelectionModel().getSelectedIndex());
-                updateMostPlayed();
-            } else {
-                playlistDAO.remove(playlist);
-                clearItemsAndMostPlayed();
-                listViewPlaylist.getItems().remove(listViewPlaylist.getSelectionModel().getSelectedIndex());
-                listViewPlaylist.getSelectionModel().select(-1);
-                loadPlaylists();
+            if (selectedItemName != null) {
+                Playlist playlist = playlistDAO.getPlaylistByName(selectedPlaylistName);
+                if (playlist.getContents().size() >= 2) {
+                    itemDAO.removeItemFromPlaylistByName(playlist, selectedItemName);
+                    playlist.getContents().clear();
+                    playlist.getContents().addAll(itemDAO.getItemsByPlaylist(playlist));
+                    logger.info("REMOVED " + selectedPlaylistName + " from the playlist");
+                    listViewItem.getItems().remove(listViewItem.getSelectionModel().getSelectedIndex());
+                    updateMostPlayed();
+                } else {
+                    itemDAO.update(itemDAO.getItemFromPlaylistByName(playlist, selectedItemName));
+                    playlistDAO.remove(playlist);
+                    clearItemsAndMostPlayed();
+                    listViewPlaylist.getItems().remove(listViewPlaylist.getSelectionModel().getSelectedIndex());
+                    listViewPlaylist.getSelectionModel().select(-1);
+                    loadPlaylists();
+                }
             }
         } else {
             logger.warn("No media has been selected");
@@ -299,15 +303,19 @@ public class PlaylistController implements Initializable {
     @FXML
     private void selectPlaylist(MouseEvent event) {
         if (event.getClickCount() == 1) {
-            selectedPlaylistName.setValue(listViewPlaylist.getSelectionModel().getSelectedItem());
-            if (selectedPlaylistName != null) {
-                logger.info("SELECTED the playlist " + selectedPlaylistName.getValue());
-                Playlist playlist = playlistDAO.getPlaylistByName(selectedPlaylistName.getValue());
-                if (!playlist.getContents().isEmpty()) {
-                    showPlaylistContents(playlist);
+            if (listViewPlaylist.getSelectionModel().getSelectedItem() != null) {
+                selectedPlaylistName.setValue(listViewPlaylist.getSelectionModel().getSelectedItem());
+                if (selectedPlaylistName != null) {
+                    logger.info("SELECTED the playlist " + selectedPlaylistName.getValue());
+                    Playlist playlist = playlistDAO.getPlaylistByName(selectedPlaylistName.getValue());
+                    if (!playlist.getContents().isEmpty()) {
+                        showPlaylistContents(playlist);
+                    } else {
+                        clearItemsAndMostPlayed();
+                    }
+                } else {
+                    logger.warn("No media has been selected");
                 }
-            } else {
-                logger.warn("No media has been selected");
             }
         }
     }
