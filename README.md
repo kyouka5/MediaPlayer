@@ -4,6 +4,13 @@ A simple media player written in Java. It allows users to organize their music/v
 Supported file formats are .mp3 and .mp4
 
 ## Usage
+This program requires a MySQL database to store data about playlists and music/video files. I recommend creating a [RemoteMySQL database](https://remotemysql.com/) for this purpose. After creating a database, you need to add your login credentials to the `db.properties` file in this way:
+```
+db.url = jdbc:mysql://remotemysql.com:3306/DATABASE_NAME
+db.user = USERNAME
+db.password = PASSWORD
+```
+
 Execute either of the following commands in the main directory:
 ```
 mvn package
@@ -20,5 +27,5 @@ mvn exec:java
 * Maven 3.0 or above
 
 ## Credits
-* <a href=https://www.flaticon.com/authors/stephen-hutchings>Stephen Hutchings'</a> Typicons Icon Pack from <a href=https://www.flaticon.com> Flaticon</a>
-* <a href=http://www.jthink.net/jaudiotagger>Jaudiotagger</a>
+* [Stephen Hutchings](https://www.flaticon.com/authors/stephen-hutchings)' Typicons Icon Pack from [Flaticon](https://www.flaticon.com)
+* [Jaudiotagger](http://www.jthink.net/jaudiotagger)
