@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 public class PlaylistTest {
     private Playlist playlist;
@@ -48,7 +49,7 @@ public class PlaylistTest {
         assertEquals(item3, next);
 
         Item shouldBeNull = playlist.getNextItem(item3);
-        assertEquals(null, shouldBeNull);
+        assertNull(shouldBeNull);
     }
 
     @Test
@@ -57,7 +58,7 @@ public class PlaylistTest {
         assertEquals(item1, previous);
 
         Item shouldBeNull = playlist.getPreviousItem(item1);
-        assertEquals(null, shouldBeNull);
+        assertNull(shouldBeNull);
     }
 
     @Test
