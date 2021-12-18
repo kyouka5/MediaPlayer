@@ -15,7 +15,6 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Slider;
 import javafx.scene.control.ToggleButton;
-import javafx.scene.control.ToggleGroup;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
@@ -158,7 +157,7 @@ public class Controller implements Initializable {
         mediaPlayer.setOnReady(() -> {
             durationSlider.setMax((mediaPlayer.getTotalDuration().toSeconds()));
             TimeFormatter timeUtil = new TimeFormatter();
-            totalTime.setText(timeUtil.timeToString(mediaPlayer.getTotalDuration()));
+            totalTime.setText(timeUtil.formatTime(mediaPlayer.getTotalDuration()));
         });
 
         mediaPlayer.setOnEndOfMedia(() -> {
@@ -191,7 +190,7 @@ public class Controller implements Initializable {
         if (mediaPlayer != null) {
             Platform.runLater(() -> {
                 TimeFormatter timeUtil = new TimeFormatter();
-                timeElapsed.setText(timeUtil.timeToString(mediaPlayer.getCurrentTime()));
+                timeElapsed.setText(timeUtil.formatTime(mediaPlayer.getCurrentTime()));
             });
         }
     }

@@ -22,27 +22,17 @@ public class ValidatorTest {
 
     @AfterEach
     public void tearDown() {
-        validator = null;
     }
 
     @Test
     public void testCheckPlaylistNameShouldReturnTrueWhenNameIsValid() {
-        var validName = "Hybrid Theory (2000)";
+        var validName = "Hunting Party";
         Mockito.when(playlistDAO.getPlaylistByName(validName)).thenReturn(null);
         boolean validationResult = validator.checkPlaylistName(validName);
 
         Mockito.verify(playlistDAO).getPlaylistByName(validName);
         Mockito.verifyNoMoreInteractions(playlistDAO);
         assertTrue(validationResult);
-    }
-
-    @Test
-    public void testCheckPlaylistNameShouldReturnFalseWhenNameHasLeadingWhitespaces() {
-        var nameWithLeadingWhitespaces = "      Meteora";
-        boolean validationResult = validator.checkPlaylistName(nameWithLeadingWhitespaces);
-
-        Mockito.verifyNoInteractions(playlistDAO);
-        assertFalse(validationResult);
     }
 
     @Test
@@ -55,20 +45,23 @@ public class ValidatorTest {
     }
 
     @Test
-    public void testCheckPlaylistNameShouldReturnFalseWhenNameContainsOnlyWhitespaces() {
-        var nameWithOnlyWhitespaces = "        ";
-        boolean validationResult = validator.checkPlaylistName(nameWithOnlyWhitespaces);
+    public void testCheckPlaylistNameShouldReturnFalseWhenNameIsTooLong() {
+        var tooLongName = "And when I close my eyes tonight, to symphonies of blinding light";
+        boolean validationResult = validator.checkPlaylistName(tooLongName);
 
         Mockito.verifyNoInteractions(playlistDAO);
         assertFalse(validationResult);
     }
 
     @Test
-    public void testCheckPlaylistNameShouldReturnFalseWhenNameIsTooLong() {
-        var tooLongName = "And when I close my eyes tonight, To symphonies of blinding light";
-        boolean validationResult = validator.checkPlaylistName(tooLongName);
+    public void testCheckPlaylistNameShouldReturnFalseWhenNameIsNotUnique() {
+        var notUniqueName = "Hybrid Theory (2000)";
+        Playlist playlistWithGivenName = Playlist.builder().name(notUniqueName).build();
+        Mockito.when(playlistDAO.getPlaylistByName(notUniqueName)).thenReturn(playlistWithGivenName);
+        boolean validationResult = validator.checkUniqueness(notUniqueName);
 
-        Mockito.verifyNoInteractions(playlistDAO);
+        Mockito.verify(playlistDAO).getPlaylistByName(notUniqueName);
+        Mockito.verifyNoMoreInteractions(playlistDAO);
         assertFalse(validationResult);
     }
 
@@ -100,7 +93,7 @@ public class ValidatorTest {
     }
 
     @Test
-    public void testCheckWhitespacesShouldReturnTrueWhenNameHasNoWhitespaces() {
+    public void testCheckWhitespacesShouldReturnTrueWhenNameHasNoLeadingOrTrailingWhitespaces() {
         var validName = "A Thousand Suns";
         boolean validationResult = validator.checkWhitespaces(validName);
 
@@ -112,6 +105,15 @@ public class ValidatorTest {
     public void testCheckWhitespacesShouldReturnFalseWhenNameHasLeadingWhitespaces() {
         var nameWithLeadingWhitespaces = "      Meteora";
         boolean validationResult = validator.checkWhitespaces(nameWithLeadingWhitespaces);
+
+        Mockito.verifyNoInteractions(playlistDAO);
+        assertFalse(validationResult);
+    }
+
+    @Test
+    public void testCheckWhitespacesShouldReturnFalseWhenNameHasTrailingWhitespaces() {
+        var nameWithTrailingWhitespaces = "Reanimation      ";
+        boolean validationResult = validator.checkWhitespaces(nameWithTrailingWhitespaces);
 
         Mockito.verifyNoInteractions(playlistDAO);
         assertFalse(validationResult);
@@ -139,7 +141,7 @@ public class ValidatorTest {
 
     @Test
     public void testCheckUniquenessShouldReturnFalseWhenNameIsNotUnique() {
-        var notUniqueName = "Hybrid Theory (2000)";
+        var notUniqueName = "Hybrid Theory";
         Playlist playlistWithGivenName = Playlist.builder().name(notUniqueName).build();
         Mockito.when(playlistDAO.getPlaylistByName(notUniqueName)).thenReturn(playlistWithGivenName);
         boolean validationResult = validator.checkUniqueness(notUniqueName);

@@ -7,8 +7,7 @@ import org.junit.jupiter.api.Test;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class PlaylistTest {
     private Playlist playlist;
@@ -37,14 +36,10 @@ public class PlaylistTest {
 
     @AfterEach
     public void tearDown() {
-        playlist = null;
-        item1 = null;
-        item2 = null;
-        item3 = null;
     }
 
     @Test
-    public void testNextItem() {
+    public void testGetNextItemShouldReturnTheNextItemWhenItExists() {
         Item next = playlist.getNextItem(item2);
         assertEquals(item3, next);
 
@@ -53,7 +48,13 @@ public class PlaylistTest {
     }
 
     @Test
-    public void testPreviousItem() {
+    public void testGetNextItemShouldReturnNullWhenItDoesNotExist() {
+        Item shouldBeNull = playlist.getNextItem(item3);
+        assertNull(shouldBeNull);
+    }
+
+    @Test
+    public void testGetPreviousItemShouldReturnThePreviousItemWhenItExists() {
         Item previous = playlist.getPreviousItem(item2);
         assertEquals(item1, previous);
 
@@ -62,11 +63,24 @@ public class PlaylistTest {
     }
 
     @Test
-    public void testShuffle() {
-        Playlist shouldReturnOriginal = playlist;
-        shouldReturnOriginal.shufflePlaylist();
-        shouldReturnOriginal.unshufflePlaylist();
-        assertEquals(playlist, shouldReturnOriginal);
+    public void testGetPreviousItemShouldReturnNullWhenItDoesNotExist() {
+        Item shouldBeNull = playlist.getPreviousItem(item1);
+        assertNull(shouldBeNull);
+    }
+
+    @Test
+    public void testShufflePlaylistShouldShuffleTheItems() {
+        var originalListOfItems = List.copyOf(playlist.getContents());
+        playlist.shufflePlaylist();
+        assertNotEquals(originalListOfItems, playlist.getContents());
+    }
+
+    @Test
+    public void testUnshufflePlaylistShouldUnshuffleTheItems() {
+        var originalListOfItems = List.copyOf(playlist.getContents());
+        playlist.shufflePlaylist();
+        playlist.unshufflePlaylist();
+        assertEquals(originalListOfItems, playlist.getContents());
     }
 }
 

@@ -12,7 +12,7 @@ public class TimeFormatter {
      * @param time the time in milliseconds
      * @return the formatted time
      */
-    public String timeToString(Duration time) {
+    public String formatTime(Duration time) {
         int hours = (int) time.toHours();
         int minutes = (int) time.toMinutes() - hours * 60;
         int seconds = (int) time.toSeconds() - hours * 60 * 60 - minutes * 60;
