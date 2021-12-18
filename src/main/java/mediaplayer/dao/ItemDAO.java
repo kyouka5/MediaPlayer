@@ -4,14 +4,13 @@ import com.google.inject.persist.Transactional;
 import mediaplayer.model.Item;
 import mediaplayer.model.Playlist;
 import mediaplayer.util.jpa.GenericDAO;
-
 import javax.persistence.TypedQuery;
 import java.util.List;
 
 /**
  * DAO class of the {@link Item} model.
  */
-public class ItemDAO extends GenericDAO {
+public class ItemDAO extends GenericDAO<Item> {
     /**
      * Calls {@link GenericDAO}'s constructor on the {@link Item} class.
      */
@@ -29,10 +28,9 @@ public class ItemDAO extends GenericDAO {
         if (playlist != null) {
             TypedQuery<Item> query = entityManager.createQuery("select i from Item i where " + playlist.getId() + " = i.playlist.id", Item.class);
             List<Item> result = query.getResultList();
-            return !result.isEmpty() ? result : null;
-        } else {
-            return null;
+            return result.isEmpty() ? null : result;
         }
+        return null;
     }
 
     /**
@@ -46,10 +44,9 @@ public class ItemDAO extends GenericDAO {
         if (playlist != null) {
             TypedQuery<Item> query = entityManager.createQuery("select i from Item i where " + playlist.getId() + " = i.playlist.id and i.path = '" + path + "'", Item.class);
             List<Item> result = query.getResultList();
-            return !result.isEmpty() ? result.get(0) : null;
-        } else {
-            return null;
+            return result.isEmpty() ? null : result.get(0);
         }
+        return null;
     }
 
     /**

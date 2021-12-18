@@ -8,68 +8,62 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Text?>
 
-<HBox id="hbox" stylesheets="@../style.css" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="mediaplayer.controller.PlaylistController">
-   <children>
-      <VBox>
-         <children>
-            <Text fill="#cccccc" strokeType="OUTSIDE" strokeWidth="0.0" text="Playlists">
-               <VBox.margin>
-                  <Insets bottom="10.0" />
-               </VBox.margin>
-            </Text>
-            <ListView fx:id="listViewPlaylist" onMouseClicked="#selectPlaylist" />
-            <HBox spacing="10.0">
-               <children>
-                  <TextField fx:id="playlistNameField" prefWidth="105.0" promptText="Set playlist name" HBox.hgrow="ALWAYS">
-                     <HBox.margin>
-                        <Insets />
-                     </HBox.margin></TextField>
-                  <Button mnemonicParsing="false" onAction="#createPlaylist" text="Create" />
-                  <Button mnemonicParsing="false" onAction="#updatePlaylist" text="Edit">
-                     <HBox.margin>
-                        <Insets />
-                     </HBox.margin></Button>
-                  <Button mnemonicParsing="false" onAction="#deletePlaylist" text="Remove" />
-               </children>
-               <VBox.margin>
-                  <Insets top="10.0" />
-               </VBox.margin>
-            </HBox>
-         </children>
-         <HBox.margin>
-            <Insets right="10.0" />
-         </HBox.margin>
-      </VBox>
-      <VBox>
-         <children>
-            <Text fill="#cccccc" strokeType="OUTSIDE" strokeWidth="0.0" text="Items">
-               <VBox.margin>
-                  <Insets bottom="10.0" />
-               </VBox.margin>
-            </Text>
-            <ListView fx:id="listViewItem" onMouseClicked="#selectItem" prefHeight="247.0" prefWidth="500.0" />
-            <HBox spacing="10.0">
-               <children>
-                  <Button mnemonicParsing="false" onAction="#createItem" text="Import" />
-                  <Button mnemonicParsing="false" onAction="#deleteItem" text="Remove" />
-               </children>
-               <VBox.margin>
-                  <Insets top="10.0" />
-               </VBox.margin>
-            </HBox>
-            <Text fill="#cccccc" strokeType="OUTSIDE" strokeWidth="0.0" text="Most Played">
-               <VBox.margin>
-                  <Insets bottom="5.0" top="5.0" />
-               </VBox.margin>
-            </Text>
-            <ListView fx:id="listViewMostPlayed" onMouseClicked="#selectItem" prefHeight="126.0" prefWidth="500.0" />
-         </children>
-         <HBox.margin>
-            <Insets left="10.0" />
-         </HBox.margin>
-      </VBox>
-   </children>
+<HBox id="hbox" stylesheets="@../style.css" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="mediaplayer.controller.PlaylistController">
    <padding>
-      <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+      <Insets bottom="10.0" left="10.0" right="10.0" top="10.0"/>
    </padding>
+   <VBox>
+      <HBox.margin>
+         <Insets right="10.0"/>
+      </HBox.margin>
+      <Text fill="#cccccc" strokeType="OUTSIDE" strokeWidth="0.0" text="Playlists">
+         <VBox.margin>
+            <Insets bottom="10.0"/>
+         </VBox.margin>
+      </Text>
+      <ListView fx:id="listViewPlaylist" onMouseClicked="#selectPlaylist"/>
+      <HBox spacing="10.0">
+         <VBox.margin>
+            <Insets top="10.0"/>
+         </VBox.margin>
+         <TextField fx:id="playlistNameField" prefWidth="105.0" promptText="Set playlist name"
+                    HBox.hgrow="ALWAYS">
+            <HBox.margin>
+               <Insets/>
+            </HBox.margin>
+         </TextField>
+         <Button mnemonicParsing="false" onAction="#createPlaylist" text="Create"/>
+         <Button mnemonicParsing="false" onAction="#updatePlaylist" text="Edit">
+            <HBox.margin>
+               <Insets/>
+            </HBox.margin>
+         </Button>
+         <Button mnemonicParsing="false" onAction="#deletePlaylist" text="Remove"/>
+      </HBox>
+   </VBox>
+   <VBox>
+      <HBox.margin>
+         <Insets left="10.0"/>
+      </HBox.margin>
+      <Text fill="#cccccc" strokeType="OUTSIDE" strokeWidth="0.0" text="Items">
+         <VBox.margin>
+            <Insets bottom="10.0"/>
+         </VBox.margin>
+      </Text>
+      <ListView fx:id="listViewItem" onMouseClicked="#selectItem" prefHeight="247.0" prefWidth="500.0"/>
+      <HBox spacing="10.0">
+         <VBox.margin>
+            <Insets top="10.0"/>
+         </VBox.margin>
+         <Button mnemonicParsing="false" onAction="#createItem" text="Import"/>
+         <Button mnemonicParsing="false" onAction="#deleteItem" text="Remove"/>
+      </HBox>
+      <Text fill="#cccccc" strokeType="OUTSIDE" strokeWidth="0.0" text="Most Played">
+         <VBox.margin>
+            <Insets bottom="5.0" top="5.0"/>
+         </VBox.margin>
+      </Text>
+      <ListView fx:id="listViewMostPlayed" onMouseClicked="#selectItem" prefHeight="126.0" prefWidth="500.0"/>
+   </VBox>
 </HBox>

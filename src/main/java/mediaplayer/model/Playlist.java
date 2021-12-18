@@ -1,18 +1,22 @@
 package mediaplayer.model;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-
-import javax.persistence.*;
+import com.google.common.base.Objects;
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
-import java.util.*;
+import lombok.*;
+
+import javax.persistence.*;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
 
 /**
  * Class representing a playlist.
  */
-@Data
+@Getter
+@Setter
+@ToString
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
@@ -42,7 +46,7 @@ public class Playlist {
     @Transient
     private int currentIndex;
 
-    public Playlist(String name, List<Item> contents) {
+    public Playlist(@NonNull String name, List<Item> contents) {
         this.name = name;
         this.contents = contents;
     }
@@ -57,9 +61,8 @@ public class Playlist {
         currentIndex = contents.indexOf(currentlyPlaying);
         if (currentIndex < contents.size() - 1) {
             return contents.get(currentIndex + 1);
-        } else {
-            return null;
         }
+        return null;
     }
 
     /**
@@ -72,9 +75,8 @@ public class Playlist {
         currentIndex = contents.indexOf(currentlyPlaying);
         if (currentIndex > 0) {
             return contents.get(currentIndex - 1);
-        } else {
-            return null;
         }
+        return null;
     }
 
     /**
@@ -88,7 +90,19 @@ public class Playlist {
      * Restores the original order of the playlist.
      */
     public void unshufflePlaylist() {
-        Collections.sort(contents, Comparator.comparingInt(Item::getId));
+        contents.sort(Comparator.comparingInt(Item::getId));
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Playlist playlist = (Playlist) o;
+        return id == playlist.id && currentIndex == playlist.currentIndex && Objects.equal(name, playlist.name) && Objects.equal(contents, playlist.contents);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hashCode(id, name, contents, currentIndex);
+    }
 }

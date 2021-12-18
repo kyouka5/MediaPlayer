@@ -3,42 +3,40 @@ package mediaplayer.controller;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 import javafx.application.Platform;
-import javafx.beans.InvalidationListener;
-import javafx.beans.Observable;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
-import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
 import javafx.collections.MapChangeListener;
-import javafx.event.EventHandler;
+import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Slider;
 import javafx.scene.control.ToggleButton;
+import javafx.scene.control.ToggleGroup;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
-import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.HBox;
 import javafx.scene.media.Media;
 import javafx.scene.media.MediaPlayer;
 import javafx.scene.media.MediaView;
+import javafx.scene.text.Text;
 import javafx.stage.Stage;
 import javafx.util.Duration;
-import javafx.scene.text.Text;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import mediaplayer.dao.ItemDAO;
-import mediaplayer.util.guice.PersistenceModule;
 import mediaplayer.dao.PlaylistDAO;
 import mediaplayer.model.Item;
 import mediaplayer.model.Playlist;
 import mediaplayer.util.TimeFormatter;
+import mediaplayer.util.guice.PersistenceModule;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.net.URL;
+import java.text.MessageFormat;
+import java.util.Objects;
 import java.util.ResourceBundle;
 
 public class Controller implements Initializable {
@@ -130,13 +128,10 @@ public class Controller implements Initializable {
             }
         });
 
-        mediaView.setOnMouseClicked(new EventHandler<MouseEvent>() {
-            @Override
-            public void handle(MouseEvent mouseEvent) {
-                if (mediaPlayer != null) {
-                    if (mouseEvent.getClickCount() == 1 && !mediaPlayer.getCurrentTime().equals(mediaPlayer.getTotalDuration())) {
-                        playOrPauseMedia();
-                    }
+        mediaView.setOnMouseClicked(mouseEvent -> {
+            if (mediaPlayer != null) {
+                if (mouseEvent.getClickCount() == 1 && !mediaPlayer.getCurrentTime().equals(mediaPlayer.getTotalDuration())) {
+                    playOrPauseMedia();
                 }
             }
         });
@@ -152,53 +147,27 @@ public class Controller implements Initializable {
 
         volumeSlider.setValue(mediaPlayer.getVolume() * 100);
 
-        volumeSlider.valueProperty().addListener(new InvalidationListener() {
-            @Override
-            public void invalidated(Observable observable) {
-                mediaPlayer.setVolume(volumeSlider.getValue() / 100);
-            }
+        volumeSlider.valueProperty().addListener(observable -> mediaPlayer.setVolume(volumeSlider.getValue() / 100));
+
+        durationSlider.setOnMouseClicked(event -> mediaPlayer.seek(Duration.seconds(durationSlider.getValue())));
+
+        mediaPlayer.currentTimeProperty().addListener((observable, oldValue, newValue) -> durationSlider.setValue(newValue.toSeconds()));
+
+        mediaPlayer.currentTimeProperty().addListener(observable -> updateTime());
+
+        mediaPlayer.setOnReady(() -> {
+            durationSlider.setMax((mediaPlayer.getTotalDuration().toSeconds()));
+            TimeFormatter timeUtil = new TimeFormatter();
+            totalTime.setText(timeUtil.timeToString(mediaPlayer.getTotalDuration()));
         });
 
-        durationSlider.setOnMouseClicked(new EventHandler<MouseEvent>() {
-            @Override
-            public void handle(MouseEvent event) {
-                mediaPlayer.seek(Duration.seconds(durationSlider.getValue()));
-            }
-        });
-
-        mediaPlayer.currentTimeProperty().addListener(new ChangeListener<Duration>() {
-            @Override
-            public void changed(ObservableValue<? extends Duration> observable, Duration oldValue, Duration newValue) {
-                durationSlider.setValue(newValue.toSeconds());
-            }
-        });
-
-        mediaPlayer.currentTimeProperty().addListener(new InvalidationListener() {
-            @Override
-            public void invalidated(Observable observable) {
-                updateTime();
-            }
-        });
-
-        mediaPlayer.setOnReady(new Runnable() {
-            @Override
-            public void run() {
-                durationSlider.setMax((mediaPlayer.getTotalDuration().toSeconds()));
-                TimeFormatter timeUtil = new TimeFormatter();
-                totalTime.setText(timeUtil.timeToString(mediaPlayer.getTotalDuration()));
-            }
-        });
-
-        mediaPlayer.setOnEndOfMedia(new Runnable() {
-            @Override
-            public void run() {
-                if (!mediaPlayer.getStatus().equals(MediaPlayer.Status.PAUSED)) {
-                    if (repeatToggle.isSelected()) {
-                        playItem(mediaPlayer.getMedia().getSource());
-                    } else {
-                        playNextMedia();
-                        mediaPlayer.seek(Duration.ZERO);
-                    }
+        mediaPlayer.setOnEndOfMedia(() -> {
+            if (!mediaPlayer.getStatus().equals(MediaPlayer.Status.PAUSED)) {
+                if (repeatToggle.isSelected()) {
+                    playItem(mediaPlayer.getMedia().getSource());
+                } else {
+                    playNextMedia();
+                    mediaPlayer.seek(Duration.ZERO);
                 }
             }
         });
@@ -220,11 +189,9 @@ public class Controller implements Initializable {
      */
     private void updateTime() {
         if (mediaPlayer != null) {
-            Platform.runLater(new Runnable() {
-                public void run() {
-                    TimeFormatter timeUtil = new TimeFormatter();
-                    timeElapsed.setText(timeUtil.timeToString(mediaPlayer.getCurrentTime()));
-                }
+            Platform.runLater(() -> {
+                TimeFormatter timeUtil = new TimeFormatter();
+                timeElapsed.setText(timeUtil.timeToString(mediaPlayer.getCurrentTime()));
             });
         }
     }
@@ -234,14 +201,14 @@ public class Controller implements Initializable {
             if (mediaPlayer.getStatus().equals(MediaPlayer.Status.PAUSED)) {
                 logger.info("The media player has been RESUMED");
                 mediaPlayer.play();
-                playPauseButtonIcon.setImage(new Image(getClass().getResource("/icons/pause-button.png").toString()));
+                playPauseButtonIcon.setImage(new Image(Objects.requireNonNull(getClass().getResource("/icons/pause-button.png")).toString()));
             } else if (mediaPlayer.getStatus().equals(MediaPlayer.Status.STOPPED)) {
                 playItem(mediaPlayer.getMedia().getSource());
-                playPauseButtonIcon.setImage(new Image(getClass().getResource("/icons/pause-button.png").toString()));
+                playPauseButtonIcon.setImage(new Image(Objects.requireNonNull(getClass().getResource("/icons/pause-button.png")).toString()));
             } else {
                 logger.info("The media player has been PAUSED");
                 mediaPlayer.pause();
-                playPauseButtonIcon.setImage(new Image(getClass().getResource("/icons/play-button-1.png").toString()));
+                playPauseButtonIcon.setImage(new Image(Objects.requireNonNull(getClass().getResource("/icons/play-button-1.png")).toString()));
             }
         } else {
             logger.warn("Unable to PLAY or PAUSE - no media has been selected");
@@ -249,23 +216,23 @@ public class Controller implements Initializable {
     }
 
     @FXML
-    private void playOrPauseMedia(javafx.event.ActionEvent event) {
+    private void playOrPauseMedia(ActionEvent event) {
         playOrPauseMedia();
     }
 
     @FXML
-    private void stopMedia(javafx.event.ActionEvent event) {
+    private void stopMedia(ActionEvent event) {
         if (mediaPlayer != null) {
             logger.info("The media player has been STOPPED");
             mediaPlayer.stop();
-            playPauseButtonIcon.setImage(new Image(getClass().getResource("/icons/play-button-1.png").toString()));
+            playPauseButtonIcon.setImage(new Image(Objects.requireNonNull(getClass().getResource("/icons/play-button-1.png")).toString()));
         } else {
             logger.warn("Unable to STOP - no media has been selected");
         }
     }
 
     @FXML
-    private void previousMedia(javafx.event.ActionEvent event) {
+    private void previousMedia(ActionEvent event) {
         if (mediaPlayer != null) {
             Playlist playlist = playlistDAO.getPlaylistByName(selectedPlaylistName.getValue());
             if (playlist != null) {
@@ -291,7 +258,7 @@ public class Controller implements Initializable {
     }
 
     @FXML
-    private void nextMedia(javafx.event.ActionEvent event) {
+    private void nextMedia(ActionEvent event) {
         if (mediaPlayer != null) {
             playNextMedia();
         } else {
@@ -341,7 +308,7 @@ public class Controller implements Initializable {
             setControls(mediaPlayer);
             setMetadata(item);
             mediaPlayer.play();
-            playPauseButtonIcon.setImage(new Image(getClass().getResource("/icons/pause-button.png").toString()));
+            playPauseButtonIcon.setImage(new Image(Objects.requireNonNull(getClass().getResource("/icons/pause-button.png")).toString()));
             playlistController.updateMostPlayed();
         } else {
             logger.info("This playlist does not exist anymore.");
@@ -355,36 +322,33 @@ public class Controller implements Initializable {
      */
     private void setMetadata(Item item) {
         if (item.getArtist() != null && item.getYear().getValue() != 0 && item.getAlbum() != null && item.getTitle() != null) {
-            stage.setTitle(item.getArtist() + " < " + item.getYear() + " < " + item.getAlbum() + " < " + item.getTitle());
+            stage.setTitle(MessageFormat.format("{0} < {1} < {2} < {3}", item.getArtist(), item.getYear(), item.getAlbum(), item.getTitle()));
             itemName.setText(item.getTitle());
         } else {
             stage.setTitle("Media Player");
             itemName.setText("");
         }
 
-        mediaPlayer.getMedia().getMetadata().addListener(new MapChangeListener<String, Object>() {
-            @Override
-            public void onChanged(Change<? extends String, ?> change) {
-                if (change.wasAdded()) {
-                    if (change.getKey().equals("image"))
-                        albumCover.setImage((Image) change.getValueAdded());
-                }
+        mediaPlayer.getMedia().getMetadata().addListener((MapChangeListener<String, Object>) change -> {
+            if (change.wasAdded()) {
+                if (change.getKey().equals("image"))
+                    albumCover.setImage((Image) change.getValueAdded());
             }
         });
     }
 
     @FXML
-    private void muteUnmuteMedia(javafx.event.ActionEvent event) {
+    private void muteUnmuteMedia(ActionEvent event) {
         if (mediaPlayer != null) {
             if (volumeSlider.valueProperty().intValue() != 0) {
                 logger.info("The media player has been MUTED");
                 previousVolume = volumeSlider.valueProperty().intValue();
                 volumeSlider.setValue(0);
-                muteUnmuteButtonIcon.setImage(new Image(getClass().getResource("/icons/volume-level.png").toString()));
+                muteUnmuteButtonIcon.setImage(new Image(Objects.requireNonNull(getClass().getResource("/icons/volume-level.png")).toString()));
             } else {
                 logger.info("The media player has been UNMUTED");
                 volumeSlider.setValue(previousVolume);
-                muteUnmuteButtonIcon.setImage(new Image(getClass().getResource("/icons/speaker.png").toString()));
+                muteUnmuteButtonIcon.setImage(new Image(Objects.requireNonNull(getClass().getResource("/icons/speaker.png")).toString()));
             }
         } else {
             logger.warn("Unable to MUTE or UNMUTE - no media has been selected");
@@ -392,7 +356,7 @@ public class Controller implements Initializable {
     }
 
     @FXML
-    private void shuffle(javafx.event.ActionEvent event) {
+    private void shuffle(ActionEvent event) {
         if (shuffleToggle.isSelected()) {
             logger.info("Shuffle ON");
         } else {
@@ -401,7 +365,7 @@ public class Controller implements Initializable {
     }
 
     @FXML
-    private void repeat(javafx.event.ActionEvent event) {
+    private void repeat(ActionEvent event) {
         if (repeatToggle.isSelected()) {
             logger.info("Repeat ON");
         } else {
@@ -410,7 +374,7 @@ public class Controller implements Initializable {
     }
 
     @FXML
-    private void toggleFullscreen(javafx.event.ActionEvent event) {
+    private void toggleFullscreen(ActionEvent event) {
         if (!stage.isFullScreen()) {
             logger.info("Switched to Full Screen Mode");
             stage.setFullScreen(true);
@@ -421,14 +385,14 @@ public class Controller implements Initializable {
     }
 
     @FXML
-    private void showPlaylists(javafx.event.ActionEvent event) {
+    private void showPlaylists(ActionEvent event) {
         if (playlistStage == null) {
             logger.info("Opened the playlist management window");
             playlistStage = new Stage();
             playlistStage.setScene(new Scene(playlistRoot));
             playlistStage.setResizable(false);
             playlistStage.setTitle("Manage playlists");
-            playlistStage.getIcons().add(new Image(getClass().getResource("/icons/music-note.png").toString()));
+            playlistStage.getIcons().add(new Image(Objects.requireNonNull(getClass().getResource("/icons/music-note.png")).toString()));
             playlistStage.show();
             Bindings.bindBidirectional(selectedItem, playlistController.getSelectedItem());
             Bindings.bindBidirectional(selectedPlaylistName, playlistController.getSelectedPlaylistName());

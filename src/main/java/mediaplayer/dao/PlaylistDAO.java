@@ -5,13 +5,15 @@ import mediaplayer.model.Item;
 import mediaplayer.model.Playlist;
 import mediaplayer.util.jpa.GenericDAO;
 
+//import jakarta.persistence.TypedQuery;
+
 import javax.persistence.TypedQuery;
 import java.util.List;
 
 /**
  * DAO class of the {@link Playlist} model.
  */
-public class PlaylistDAO extends GenericDAO {
+public class PlaylistDAO extends GenericDAO<Playlist> {
     /**
      * Calls {@link GenericDAO}'s constructor on the {@link Playlist} class.
      */
@@ -63,6 +65,6 @@ public class PlaylistDAO extends GenericDAO {
     public Playlist getPlaylistByName(String name) {
         TypedQuery<Playlist> query = entityManager.createQuery("select p from Playlist p where p.name='" + name + "'", Playlist.class);
         List<Playlist> result = query.getResultList();
-        return !result.isEmpty() ? result.get(0) : null;
+        return result.isEmpty() ? null : result.get(0);
     }
 }

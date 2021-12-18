@@ -6,6 +6,7 @@ import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 
@@ -60,7 +61,7 @@ public class PlaylistController implements Initializable {
     private PlaylistDAO playlistDAO;
     private ItemDAO itemDAO;
 
-    private Validator validator = new Validator();
+    private Validator validator;
 
     private static Logger logger = LoggerFactory.getLogger(PlaylistController.class);
 
@@ -92,6 +93,7 @@ public class PlaylistController implements Initializable {
         Injector injector = Guice.createInjector(new PersistenceModule("mediaplayer"));
         playlistDAO = injector.getInstance(PlaylistDAO.class);
         itemDAO = injector.getInstance(ItemDAO.class);
+        validator = new Validator(playlistDAO);
 
         removeUnavailableFiles();
         loadPlaylists();
@@ -104,18 +106,18 @@ public class PlaylistController implements Initializable {
         List<String> pathsNotFound = new ArrayList<>();
         List<String> pathsInDatabase = itemDAO.getAllPaths();
 
-        for (int i = 0; i < pathsInDatabase.size(); i++) {
-            URI uriOfPath = URI.create(pathsInDatabase.get(i));
+        for (String pathInDatabase : pathsInDatabase) {
+            URI uriOfPath = URI.create(pathInDatabase);
             String uriPathToString = Paths.get(uriOfPath).toString();
             Path path = Paths.get(uriPathToString);
             if (!path.toFile().exists()) {
-                pathsNotFound.add(pathsInDatabase.get(i));
+                pathsNotFound.add(pathInDatabase);
             }
         }
 
         if (!pathsNotFound.isEmpty()) {
-            for (int i = 0; i < pathsNotFound.size(); i++) {
-                itemDAO.removeItemByPath(pathsNotFound.get(i));
+            for (String pathNotFound : pathsNotFound) {
+                itemDAO.removeItemByPath(pathNotFound);
             }
             alertUnavailableFiles();
         }
@@ -142,7 +144,7 @@ public class PlaylistController implements Initializable {
 
 
     @FXML
-    private void createPlaylist(javafx.event.ActionEvent event) {
+    private void createPlaylist(ActionEvent event) {
         if (playlistNameField != null) {
             String playlistName = playlistNameField.getText();
             boolean isNameValid = validator.checkPlaylistName(playlistName);
@@ -160,7 +162,7 @@ public class PlaylistController implements Initializable {
     }
 
     @FXML
-    private void updatePlaylist(javafx.event.ActionEvent event) {
+    private void updatePlaylist(ActionEvent event) {
         String selected = listViewPlaylist.getSelectionModel().getSelectedItem();
         if (selected != null) {
             if (playlistNameField != null) {
@@ -192,15 +194,15 @@ public class PlaylistController implements Initializable {
         Alert alert = new Alert(Alert.AlertType.ERROR);
         alert.setTitle("Error");
         alert.setHeaderText("Invalid playlist name");
-        alert.setContentText("Playlist names have to meet the following criteria: \n"
-                + "- be unique \n"
-                + "- be between 2 and 50 characters \n"
-                + "- contain neither leading nor trailing whitespaces");
+        alert.setContentText("Playlist names have to meet the following criteria: \n" +
+                             "- be unique \n" +
+                             "- be between 2 and 50 characters \n" +
+                             "- contain neither leading nor trailing whitespaces");
         alert.showAndWait();
     }
 
     @FXML
-    private void deletePlaylist(javafx.event.ActionEvent event) {
+    private void deletePlaylist(ActionEvent event) {
         String selectedPlaylistName = listViewPlaylist.getSelectionModel().getSelectedItem();
         if (selectedPlaylistName != null) {
             Playlist playlist = playlistDAO.getPlaylistByName(selectedPlaylistName);
@@ -216,7 +218,7 @@ public class PlaylistController implements Initializable {
     }
 
     @FXML
-    private void createItem(javafx.event.ActionEvent event) {
+    private void createItem(ActionEvent event) {
         String selectedPlaylistName = listViewPlaylist.getSelectionModel().getSelectedItem();
         if (selectedPlaylistName != null) {
             FileChooser fileChooser = new FileChooser();
@@ -272,7 +274,7 @@ public class PlaylistController implements Initializable {
     }
 
     @FXML
-    private void deleteItem(javafx.event.ActionEvent event) {
+    private void deleteItem(ActionEvent event) {
         String selectedPlaylistName = listViewPlaylist.getSelectionModel().getSelectedItem();
         String selectedItemName = listViewItem.getSelectionModel().getSelectedItem();
         if (selectedPlaylistName != null) {

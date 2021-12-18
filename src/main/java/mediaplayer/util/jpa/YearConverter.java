@@ -1,9 +1,8 @@
 package mediaplayer.util.jpa;
 
-import java.time.Year;
-
 import javax.persistence.AttributeConverter;
 import javax.persistence.Converter;
+import java.time.Year;
 
 @Converter
 public class YearConverter implements AttributeConverter<Year, Integer> {

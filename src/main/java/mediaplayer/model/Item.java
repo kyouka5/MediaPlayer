@@ -1,18 +1,17 @@
 package mediaplayer.model;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import com.google.common.base.Objects;
+import lombok.*;
 import mediaplayer.util.jpa.YearConverter;
-
 import javax.persistence.*;
 import java.time.Year;
 
 /**
  * Class representing an item of a {@link Playlist}.
  */
-@Data
+@Getter
+@Setter
+@ToString
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
@@ -78,4 +77,16 @@ public class Item {
         numberOfViews++;
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Item item = (Item) o;
+        return id == item.id && numberOfViews == item.numberOfViews && Objects.equal(path, item.path) && Objects.equal(name, item.name) && Objects.equal(title, item.title) && Objects.equal(artist, item.artist) && Objects.equal(album, item.album) && Objects.equal(year, item.year) && Objects.equal(genre, item.genre) && Objects.equal(playlist, item.playlist);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hashCode(id, path, name, title, artist, album, year, genre, numberOfViews, playlist);
+    }
 }

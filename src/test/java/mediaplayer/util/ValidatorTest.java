@@ -1,18 +1,23 @@
 package mediaplayer.util;
 
+import mediaplayer.dao.PlaylistDAO;
+import mediaplayer.model.Playlist;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class ValidatorTest {
     private Validator validator;
+    private PlaylistDAO playlistDAO;
 
     @BeforeEach
     public void setUp() {
-        validator = new Validator();
+        playlistDAO = Mockito.mock(PlaylistDAO.class);
+        validator = new Validator(playlistDAO);
     }
 
     @AfterEach
@@ -21,47 +26,126 @@ public class ValidatorTest {
     }
 
     @Test
-    public void validationTest() {
-        boolean validName = validator.checkPlaylistName("Hybrid Theory (2000)");
-        boolean leadingWhitespaces = validator.checkPlaylistName("      Meteora");
-        boolean whitespacesBoth = validator.checkPlaylistName("      Minutes To Midnight      ");
-        boolean whitespacesOnly = validator.checkPlaylistName("          ");
-        boolean tooLong = validator.checkPlaylistName("And when I close my eyes tonight, To symphonies of blinding light");
+    public void testCheckPlaylistNameShouldReturnTrueWhenNameIsValid() {
+        var validName = "Hybrid Theory (2000)";
+        Mockito.when(playlistDAO.getPlaylistByName(validName)).thenReturn(null);
+        boolean validationResult = validator.checkPlaylistName(validName);
 
-        assertTrue(validName);
-        assertFalse(leadingWhitespaces);
-        assertFalse(whitespacesBoth);
-        assertFalse(whitespacesOnly);
-        assertFalse(tooLong);
+        Mockito.verify(playlistDAO).getPlaylistByName(validName);
+        Mockito.verifyNoMoreInteractions(playlistDAO);
+        assertTrue(validationResult);
     }
 
     @Test
-    public void lengthTest() {
-        boolean validName = validator.checkLength("Hybrid Theory (2000)");
-        boolean tooShort = validator.checkLength("a");
-        boolean tooLong = validator.checkLength("And when I close my eyes tonight, To symphonies of blinding light!");
+    public void testCheckPlaylistNameShouldReturnFalseWhenNameHasLeadingWhitespaces() {
+        var nameWithLeadingWhitespaces = "      Meteora";
+        boolean validationResult = validator.checkPlaylistName(nameWithLeadingWhitespaces);
 
-        assertTrue(validName);
-        assertFalse(tooShort);
-        assertFalse(tooLong);
+        Mockito.verifyNoInteractions(playlistDAO);
+        assertFalse(validationResult);
     }
 
     @Test
-    public void whitespaceTest() {
-        boolean validName = validator.checkLength("A Thousand Suns");
-        boolean leadingWhitespaces = validator.checkWhitespaces("      Meteora");
-        boolean whitespacesBoth = validator.checkWhitespaces("      Minutes To Midnight      ");
+    public void testCheckPlaylistNameShouldReturnFalseWhenNameHasLeadingAndTrailingWhitespaces() {
+        var nameWithWhitespaces = "      Minutes To Midnight      ";
+        boolean validationResult = validator.checkPlaylistName(nameWithWhitespaces);
 
-        assertTrue(validName);
-        assertFalse(leadingWhitespaces);
-        assertFalse(whitespacesBoth);
+        Mockito.verifyNoInteractions(playlistDAO);
+        assertFalse(validationResult);
     }
 
     @Test
-    public void uniquenessTest() {
-        boolean uniqueName = validator.checkUniqueness("      Meteora");
-        boolean uniqueName2 = validator.checkUniqueness("a");
-        assertTrue(uniqueName);
-        assertTrue(uniqueName2);
+    public void testCheckPlaylistNameShouldReturnFalseWhenNameContainsOnlyWhitespaces() {
+        var nameWithOnlyWhitespaces = "        ";
+        boolean validationResult = validator.checkPlaylistName(nameWithOnlyWhitespaces);
+
+        Mockito.verifyNoInteractions(playlistDAO);
+        assertFalse(validationResult);
+    }
+
+    @Test
+    public void testCheckPlaylistNameShouldReturnFalseWhenNameIsTooLong() {
+        var tooLongName = "And when I close my eyes tonight, To symphonies of blinding light";
+        boolean validationResult = validator.checkPlaylistName(tooLongName);
+
+        Mockito.verifyNoInteractions(playlistDAO);
+        assertFalse(validationResult);
+    }
+
+    @Test
+    public void testCheckLengthShouldReturnTrueWhenNameHasValidLength() {
+        var validName = "Hybrid Theory (2000)";
+        boolean validationResult = validator.checkLength(validName);
+
+        Mockito.verifyNoInteractions(playlistDAO);
+        assertTrue(validationResult);
+    }
+
+    @Test
+    public void testCheckLengthShouldReturnFalseWhenNameIsTooShort() {
+        var tooShortName = "a";
+        boolean validationResult = validator.checkLength(tooShortName);
+
+        Mockito.verifyNoInteractions(playlistDAO);
+        assertFalse(validationResult);
+    }
+
+    @Test
+    public void testCheckLengthShouldReturnFalseWhenNameIsTooLong() {
+        var tooShortName = "And when I close my eyes tonight, To symphonies of blinding light";
+        boolean validationResult = validator.checkLength(tooShortName);
+
+        Mockito.verifyNoInteractions(playlistDAO);
+        assertFalse(validationResult);
+    }
+
+    @Test
+    public void testCheckWhitespacesShouldReturnTrueWhenNameHasNoWhitespaces() {
+        var validName = "A Thousand Suns";
+        boolean validationResult = validator.checkWhitespaces(validName);
+
+        Mockito.verifyNoInteractions(playlistDAO);
+        assertTrue(validationResult);
+    }
+
+    @Test
+    public void testCheckWhitespacesShouldReturnFalseWhenNameHasLeadingWhitespaces() {
+        var nameWithLeadingWhitespaces = "      Meteora";
+        boolean validationResult = validator.checkWhitespaces(nameWithLeadingWhitespaces);
+
+        Mockito.verifyNoInteractions(playlistDAO);
+        assertFalse(validationResult);
+    }
+
+    @Test
+    public void testCheckWhitespacesShouldReturnFalseWhenNameHasLeadingAndTrailingWhitespaces() {
+        var nameWithWhitespaces = "      Minutes To Midnight      ";
+        boolean validationResult = validator.checkWhitespaces(nameWithWhitespaces);
+
+        Mockito.verifyNoInteractions(playlistDAO);
+        assertFalse(validationResult);
+    }
+
+    @Test
+    public void testCheckUniquenessShouldReturnTrueWhenNameIsUnique() {
+        var uniqueName = "Hybrid Theory (2000)";
+        Mockito.when(playlistDAO.getPlaylistByName(uniqueName)).thenReturn(null);
+        boolean validationResult = validator.checkUniqueness(uniqueName);
+
+        Mockito.verify(playlistDAO).getPlaylistByName(uniqueName);
+        Mockito.verifyNoMoreInteractions(playlistDAO);
+        assertTrue(validationResult);
+    }
+
+    @Test
+    public void testCheckUniquenessShouldReturnFalseWhenNameIsNotUnique() {
+        var notUniqueName = "Hybrid Theory (2000)";
+        Playlist playlistWithGivenName = Playlist.builder().name(notUniqueName).build();
+        Mockito.when(playlistDAO.getPlaylistByName(notUniqueName)).thenReturn(playlistWithGivenName);
+        boolean validationResult = validator.checkUniqueness(notUniqueName);
+
+        Mockito.verify(playlistDAO).getPlaylistByName(notUniqueName);
+        Mockito.verifyNoMoreInteractions(playlistDAO);
+        assertFalse(validationResult);
     }
 }

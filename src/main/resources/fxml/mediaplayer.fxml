@@ -5,7 +5,6 @@
 <?import javafx.scene.control.Separator?>
 <?import javafx.scene.control.Slider?>
 <?import javafx.scene.control.ToggleButton?>
-<?import javafx.scene.control.ToggleGroup?>
 <?import javafx.scene.control.Tooltip?>
 <?import javafx.scene.image.Image?>
 <?import javafx.scene.image.ImageView?>
@@ -16,135 +15,121 @@
 <?import javafx.scene.media.MediaView?>
 <?import javafx.scene.text.Text?>
 
-<BorderPane maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" style="-fx-background-color: #111111;" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="mediaplayer.controller.Controller">
-   <bottom>
-      <VBox id="menubar" fx:id="vBox" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" stylesheets="@../style.css" BorderPane.alignment="CENTER">
-         <children>
+<BorderPane maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" style="-fx-background-color: #111111;"
+            xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="mediaplayer.controller.Controller">
+    <bottom>
+        <VBox id="menubar" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308"
+              stylesheets="@../style.css" BorderPane.alignment="CENTER">
             <HBox>
-               <children>
-                  <Text fx:id="timeElapsed" fill="#cccccc" strokeType="OUTSIDE" strokeWidth="0.0" text="--:--:--" />
-                  <Slider fx:id="durationSlider" maxHeight="15.0" minHeight="15.0" prefHeight="15.0" HBox.hgrow="ALWAYS" />
-                  <Text fx:id="totalTime" fill="#cccccc" strokeType="OUTSIDE" strokeWidth="0.0" text="--:--:--" />
-               </children>
-               <VBox.margin>
-                  <Insets />
-               </VBox.margin>
+                <VBox.margin>
+                    <Insets/>
+                </VBox.margin>
+                <Text fx:id="timeElapsed" fill="#cccccc" strokeType="OUTSIDE" strokeWidth="0.0" text="--:--:--"/>
+                <Slider fx:id="durationSlider" maxHeight="15.0" minHeight="15.0" prefHeight="15.0" HBox.hgrow="ALWAYS"/>
+                <Text fx:id="totalTime" fill="#cccccc" strokeType="OUTSIDE" strokeWidth="0.0" text="--:--:--"/>
             </HBox>
             <HBox fx:id="menuBar" alignment="CENTER_RIGHT" spacing="5.0">
-               <children>
-                  <Button id="button" contentDisplay="GRAPHIC_ONLY" layoutX="10.0" layoutY="11.0" mnemonicParsing="false" onAction="#showPlaylists" prefWidth="0.0" stylesheets="@../style.css" text="Playlists">
-                     <graphic>
+                <VBox.margin>
+                    <Insets left="5.0" right="5.0"/>
+                </VBox.margin>
+                <Button id="button" contentDisplay="GRAPHIC_ONLY" layoutX="10.0" layoutY="11.0" mnemonicParsing="false"
+                        onAction="#showPlaylists" prefWidth="0.0" stylesheets="@../style.css" text="Playlists">
+                    <graphic>
                         <ImageView fitWidth="19.0" opacity="0.8" pickOnBounds="true" preserveRatio="true">
-                           <image>
-                              <Image url="@../icons/text.png" />
-                           </image>
+                            <Image url="@../icons/text.png"/>
                         </ImageView>
-                     </graphic></Button>
-                  <StackPane prefHeight="38.0" prefWidth="290.0" HBox.hgrow="ALWAYS">
-                     <children>
-                        <Text fx:id="itemName" fill="#cccccc" strokeType="OUTSIDE" strokeWidth="0.0" />
-                        <Separator prefWidth="200.0" visible="false" />
-                     </children>
-                  </StackPane>
-                  <Button id="button" contentDisplay="GRAPHIC_ONLY" mnemonicParsing="false" onAction="#previousMedia" stylesheets="@../style.css" text="Previous">
-                     <graphic>
+                    </graphic>
+                </Button>
+                <StackPane prefHeight="38.0" prefWidth="290.0" HBox.hgrow="ALWAYS">
+                    <Text fx:id="itemName" fill="#cccccc" strokeType="OUTSIDE" strokeWidth="0.0"/>
+                    <Separator prefWidth="200.0" visible="false"/>
+                </StackPane>
+                <Button id="button" contentDisplay="GRAPHIC_ONLY" mnemonicParsing="false" onAction="#previousMedia"
+                        stylesheets="@../style.css" text="Previous">
+                    <graphic>
                         <ImageView fitWidth="10.0" opacity="0.8" pickOnBounds="true" preserveRatio="true">
-                           <image>
-                              <Image url="@../icons/scroll-arrow.png" />
-                           </image>
+                            <Image url="@../icons/scroll-arrow.png"/>
                         </ImageView>
-                     </graphic></Button>
-                  <Button id="button" contentDisplay="GRAPHIC_ONLY" mnemonicParsing="false" onAction="#playOrPauseMedia" stylesheets="@../style.css" text="Play / Pause">
-                     <graphic>
-                        <ImageView fx:id="playPauseButtonIcon" fitWidth="19.0" opacity="0.8" pickOnBounds="true" preserveRatio="true">
-                           <image>
-                              <Image url="@../icons/play-button-1.png" />
-                           </image>
+                    </graphic>
+                </Button>
+                <Button id="button" contentDisplay="GRAPHIC_ONLY" mnemonicParsing="false" onAction="#playOrPauseMedia"
+                        stylesheets="@../style.css" text="Play / Pause">
+                    <graphic>
+                        <ImageView fx:id="playPauseButtonIcon" fitWidth="19.0" opacity="0.8" pickOnBounds="true"
+                                   preserveRatio="true">
+                            <Image url="@../icons/play-button-1.png"/>
                         </ImageView>
-                     </graphic></Button>
-                  <Button id="button" contentDisplay="GRAPHIC_ONLY" mnemonicParsing="false" onAction="#nextMedia" stylesheets="@../style.css" text="Next">
-                     <graphic>
+                    </graphic>
+                </Button>
+                <Button id="button" contentDisplay="GRAPHIC_ONLY" mnemonicParsing="false" onAction="#nextMedia"
+                        stylesheets="@../style.css" text="Next">
+                    <graphic>
                         <ImageView fitWidth="10.0" opacity="0.8" pickOnBounds="true" preserveRatio="true">
-                           <image>
-                              <Image url="@../icons/right-navigation-button.png" />
-                           </image>
+                            <Image url="@../icons/right-navigation-button.png"/>
                         </ImageView>
-                     </graphic></Button>
-                  <Button id="button" contentDisplay="GRAPHIC_ONLY" layoutX="115.0" layoutY="10.0" mnemonicParsing="false" onAction="#stopMedia" stylesheets="@../style.css" text="Stop">
-                     <graphic>
+                    </graphic>
+                </Button>
+                <Button id="button" contentDisplay="GRAPHIC_ONLY" layoutX="115.0" layoutY="10.0" mnemonicParsing="false"
+                        onAction="#stopMedia" stylesheets="@../style.css" text="Stop">
+                    <graphic>
                         <ImageView fitWidth="10.0" opacity="0.8" pickOnBounds="true" preserveRatio="true">
-                           <image>
-                              <Image url="@../icons/stop-button.png" />
-                           </image>
+                            <Image url="@../icons/stop-button.png"/>
                         </ImageView>
-                     </graphic></Button>
-                  <Separator prefWidth="50.0" visible="false" />
-                  <ToggleButton id="button" fx:id="shuffleToggle" contentDisplay="GRAPHIC_ONLY" mnemonicParsing="false" onAction="#shuffle" stylesheets="@../style.css" text="Shuffle">
-                     <graphic>
+                    </graphic>
+                </Button>
+                <Separator prefWidth="50.0" visible="false"/>
+                <ToggleButton id="button" fx:id="shuffleToggle" contentDisplay="GRAPHIC_ONLY" mnemonicParsing="false"
+                              onAction="#shuffle" stylesheets="@../style.css" text="Shuffle">
+                    <graphic>
                         <ImageView fitWidth="15.0" opacity="0.8" pickOnBounds="true" preserveRatio="true">
-                           <image>
-                              <Image url="@../icons/shuffle.png" />
-                           </image>
+                            <Image url="@../icons/shuffle.png"/>
                         </ImageView>
-                     </graphic>
-                     <tooltip>
-                        <Tooltip text="Toggle shuffle" />
-                     </tooltip>
-                     <toggleGroup>
-                        <ToggleGroup fx:id="repeatShuffle" />
-                     </toggleGroup>
-                  </ToggleButton>
-                  <ToggleButton id="button" fx:id="repeatToggle" contentDisplay="GRAPHIC_ONLY" mnemonicParsing="false" onAction="#repeat" stylesheets="@../style.css" text="Repeat" toggleGroup="$repeatShuffle">
-                     <graphic>
+                    </graphic>
+                    <tooltip>
+                        <Tooltip text="Toggle shuffle"/>
+                    </tooltip>
+                </ToggleButton>
+                <ToggleButton id="button" fx:id="repeatToggle" contentDisplay="GRAPHIC_ONLY" mnemonicParsing="false"
+                              onAction="#repeat" stylesheets="@../style.css" text="Repeat">
+                    <graphic>
                         <ImageView fitWidth="15.0" opacity="0.8" pickOnBounds="true" preserveRatio="true">
-                           <image>
-                              <Image url="@../icons/repeat.png" />
-                           </image>
+                            <Image url="@../icons/repeat.png"/>
                         </ImageView>
-                     </graphic>
-                     <tooltip>
-                        <Tooltip text="Toggle repeat" />
-                     </tooltip>
-                  </ToggleButton>
-                  <ToggleButton id="button" contentDisplay="GRAPHIC_ONLY" mnemonicParsing="false" onAction="#toggleFullscreen" stylesheets="@../style.css" text="Full Screen">
-                     <toggleGroup>
-                        <ToggleGroup fx:id="repeatShuffle1" />
-                     </toggleGroup>
-                     <graphic>
+                    </graphic>
+                    <tooltip>
+                        <Tooltip text="Toggle repeat"/>
+                    </tooltip>
+                </ToggleButton>
+                <ToggleButton id="button" contentDisplay="GRAPHIC_ONLY" mnemonicParsing="false"
+                              onAction="#toggleFullscreen" stylesheets="@../style.css" text="Full Screen">
+                    <graphic>
                         <ImageView fitWidth="15.0" opacity="0.8" pickOnBounds="true" preserveRatio="true">
-                           <image>
-                              <Image url="@../icons/computer-monitor.png" />
-                           </image>
+                            <Image url="@../icons/computer-monitor.png"/>
                         </ImageView>
-                     </graphic>
-                     <tooltip>
-                        <Tooltip text="Toggle full screen" />
-                     </tooltip>
-                  </ToggleButton>
-                  <Separator opacity="0.0" HBox.hgrow="ALWAYS" />
-                  <Button id="button" contentDisplay="GRAPHIC_ONLY" mnemonicParsing="false" onAction="#muteUnmuteMedia" stylesheets="@../style.css" text="Mute / Unmute">
-                     <graphic>
-                        <ImageView fx:id="muteUnmuteButtonIcon" fitHeight="150.0" fitWidth="15.0" opacity="0.8" pickOnBounds="true" preserveRatio="true">
-                           <image>
-                              <Image url="@../icons/speaker.png" />
-                           </image>
+                    </graphic>
+                    <tooltip>
+                        <Tooltip text="Toggle full screen"/>
+                    </tooltip>
+                </ToggleButton>
+                <Separator opacity="0.0" HBox.hgrow="ALWAYS"/>
+                <Button id="button" contentDisplay="GRAPHIC_ONLY" mnemonicParsing="false" onAction="#muteUnmuteMedia"
+                        stylesheets="@../style.css" text="Mute / Unmute">
+                    <graphic>
+                        <ImageView fx:id="muteUnmuteButtonIcon" fitHeight="150.0" fitWidth="15.0" opacity="0.8"
+                                   pickOnBounds="true" preserveRatio="true">
+                            <Image url="@../icons/speaker.png"/>
                         </ImageView>
-                     </graphic></Button>
-                  <Slider fx:id="volumeSlider" showTickLabels="true" showTickMarks="true" />
-               </children>
-               <VBox.margin>
-                  <Insets left="5.0" right="5.0" />
-               </VBox.margin>
+                    </graphic>
+                </Button>
+                <Slider fx:id="volumeSlider" showTickLabels="true" showTickMarks="true"/>
             </HBox>
-         </children>
-      </VBox>
-   </bottom>
-   <center>
-      <StackPane BorderPane.alignment="CENTER">
-         <children>
-            <ImageView fx:id="albumCover" fitHeight="300.0" fitWidth="300.0" pickOnBounds="true" preserveRatio="true" />
-            <MediaView fx:id="mediaView" fitHeight="400.0" fitWidth="800.0" />
-         </children>
-      </StackPane>
-   </center>
+        </VBox>
+    </bottom>
+    <center>
+        <StackPane BorderPane.alignment="CENTER">
+            <ImageView fx:id="albumCover" fitHeight="300.0" fitWidth="300.0" pickOnBounds="true" preserveRatio="true"/>
+            <MediaView fx:id="mediaView" fitHeight="400.0" fitWidth="800.0"/>
+        </StackPane>
+    </center>
 </BorderPane>
