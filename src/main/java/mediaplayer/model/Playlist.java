@@ -9,6 +9,7 @@ import javax.persistence.*;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Class representing a playlist.
@@ -16,7 +17,7 @@ import java.util.List;
 @Getter
 @Setter
 @ToString
-@Builder(toBuilder = true)
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
@@ -46,7 +47,7 @@ public class Playlist {
     @Transient
     private int currentIndex;
 
-    public Playlist(@NonNull String name, List<Item> contents) {
+    public Playlist(String name, List<Item> contents) {
         this.name = name;
         this.contents = contents;
     }
@@ -57,12 +58,12 @@ public class Playlist {
      * @param currentlyPlaying the {@link Item} which is currently playing
      * @return the next {@link Item} of the playlist
      */
-    public Item getNextItem(Item currentlyPlaying) {
+    public Optional<Item> getNextItem(Item currentlyPlaying) {
         currentIndex = contents.indexOf(currentlyPlaying);
         if (currentIndex < contents.size() - 1) {
-            return contents.get(currentIndex + 1);
+            return Optional.of(contents.get(currentIndex + 1));
         }
-        return null;
+        return Optional.empty();
     }
 
     /**
@@ -71,12 +72,12 @@ public class Playlist {
      * @param currentlyPlaying the {@link Item} which is currently playing
      * @return the previous {@link Item} of the playlist
      */
-    public Item getPreviousItem(Item currentlyPlaying) {
+    public Optional<Item> getPreviousItem(Item currentlyPlaying) {
         currentIndex = contents.indexOf(currentlyPlaying);
         if (currentIndex > 0) {
-            return contents.get(currentIndex - 1);
+            return Optional.of(contents.get(currentIndex - 1));
         }
-        return null;
+        return Optional.empty();
     }
 
     /**

@@ -36,6 +36,7 @@ import org.slf4j.LoggerFactory;
 import java.net.URL;
 import java.text.MessageFormat;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.ResourceBundle;
 
 public class Controller implements Initializable {
@@ -241,13 +242,11 @@ public class Controller implements Initializable {
                 } else {
                     playlist.unshufflePlaylist();
                 }
-                Item previousItem = playlist.getPreviousItem(itemDAO.getItemByPath(playlist, selectedItem.getValue()));
-                if (previousItem != null) {
+                Optional<Item> previousItem = playlist.getPreviousItem(itemDAO.getItemByPath(playlist, selectedItem.getValue()));
+                previousItem.ifPresentOrElse(item -> {
                     logger.info("Started the PREVIOUS media on the list");
-                    selectedItem.set(previousItem.getPath());
-                } else {
-                    logger.info("This is the FIRST media on the playlist, hence it is not possible to get the previous one");
-                }
+                    selectedItem.set(item.getPath());
+                }, () -> logger.info("This is the FIRST media on the playlist, hence it is not possible to get the previous one"));
             } else {
                 logger.info("This playlist does not exist anymore.");
             }
@@ -274,14 +273,14 @@ public class Controller implements Initializable {
             } else {
                 playlist.unshufflePlaylist();
             }
-            Item nextItem = playlist.getNextItem(itemDAO.getItemByPath(playlist, selectedItem.getValue()));
-            if (nextItem != null) {
+            Optional<Item> nextItem = playlist.getNextItem(itemDAO.getItemByPath(playlist, selectedItem.getValue()));
+            nextItem.ifPresentOrElse(item -> {
                 logger.info("Started the NEXT media on the list");
-                selectedItem.set(nextItem.getPath());
-            } else {
+                selectedItem.set(item.getPath());
+            }, () -> {
                 mediaPlayer.stop();
                 logger.info("This is the LAST media on the playlist, hence it is not possible to get the next one");
-            }
+            });
         } else {
             logger.info("This playlist does not exist anymore.");
         }

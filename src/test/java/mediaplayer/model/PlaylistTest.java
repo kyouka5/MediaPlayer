@@ -1,11 +1,13 @@
 package mediaplayer.model;
 
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -40,32 +42,26 @@ public class PlaylistTest {
 
     @Test
     public void testGetNextItemShouldReturnTheNextItemWhenItExists() {
-        Item next = playlist.getNextItem(item2);
-        assertEquals(item3, next);
-
-        Item shouldBeNull = playlist.getNextItem(item3);
-        assertNull(shouldBeNull);
+        Optional<Item> next = playlist.getNextItem(item2);
+        next.ifPresentOrElse(nextItem -> assertEquals(item3, nextItem), Assertions::fail);
     }
 
     @Test
-    public void testGetNextItemShouldReturnNullWhenItDoesNotExist() {
-        Item shouldBeNull = playlist.getNextItem(item3);
-        assertNull(shouldBeNull);
+    public void testGetNextItemShouldReturnEmptyWhenItDoesNotExist() {
+        Optional<Item> emptyItem = playlist.getNextItem(item3);
+        assertTrue(emptyItem.isEmpty());
     }
 
     @Test
     public void testGetPreviousItemShouldReturnThePreviousItemWhenItExists() {
-        Item previous = playlist.getPreviousItem(item2);
-        assertEquals(item1, previous);
-
-        Item shouldBeNull = playlist.getPreviousItem(item1);
-        assertNull(shouldBeNull);
+        Optional<Item> previous = playlist.getPreviousItem(item2);
+        previous.ifPresentOrElse(previousItem -> assertEquals(item1, previousItem), Assertions::fail);
     }
 
     @Test
-    public void testGetPreviousItemShouldReturnNullWhenItDoesNotExist() {
-        Item shouldBeNull = playlist.getPreviousItem(item1);
-        assertNull(shouldBeNull);
+    public void testGetPreviousItemShouldReturnEmptyWhenItDoesNotExist() {
+        Optional<Item> emptyItem = playlist.getPreviousItem(item1);
+        assertTrue(emptyItem.isEmpty());
     }
 
     @Test
