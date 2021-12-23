@@ -9,10 +9,7 @@ public class Validator {
 
     private static final int MIN_PLAYLIST_NAME_LENGTH = 2;
     private static final int MAX_PLAYLIST_NAME_LENGTH = 50;
-    /**
-     * A {@link PlaylistDAO} object.
-     */
-    private PlaylistDAO playlistDAO;
+    private final PlaylistDAO playlistDAO;
 
     /**
      * Constructor with dependency injection.
@@ -58,7 +55,7 @@ public class Validator {
      * @return whether the {@code playlist name} is valid or not
      */
     public boolean checkUniqueness(String playlistName) {
-        return playlistDAO.getPlaylistByName(playlistName) == null;
+        return playlistDAO.getPlaylistByName(playlistName).isEmpty();
     }
 
 }

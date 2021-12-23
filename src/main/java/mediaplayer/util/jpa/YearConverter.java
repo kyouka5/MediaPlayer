@@ -9,7 +9,7 @@ public class YearConverter implements AttributeConverter<Year, Integer> {
 
     @Override
     public Integer convertToDatabaseColumn(Year year) {
-        return year.getValue();
+        return year == null ? 0 : year.getValue();
     }
 
     @Override

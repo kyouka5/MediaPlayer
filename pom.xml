@@ -96,13 +96,13 @@
         <dependency>
             <groupId>org.mockito</groupId>
             <artifactId>mockito-core</artifactId>
-            <version>3.9.0</version>
+            <version>4.1.0</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.hibernate</groupId>
             <artifactId>hibernate-entitymanager</artifactId>
-            <version>5.6.1.Final</version>
+            <version>5.6.3.Final</version>
         </dependency>
         <dependency>
             <groupId>javax.validation</groupId>
@@ -115,9 +115,9 @@
             <version>8.0.25</version>
         </dependency>
         <dependency>
-            <groupId>org.jaudiotagger</groupId>
+            <groupId>net.jthink</groupId>
             <artifactId>jaudiotagger</artifactId>
-            <version>2.0.1</version>
+            <version>3.0.1</version>
         </dependency>
         <dependency>
             <groupId>com.google.inject</groupId>

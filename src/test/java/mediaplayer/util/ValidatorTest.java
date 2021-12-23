@@ -7,6 +7,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
+import java.util.Optional;
+
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -27,7 +29,7 @@ public class ValidatorTest {
     @Test
     public void testCheckPlaylistNameShouldReturnTrueWhenNameIsValid() {
         var validName = "Hunting Party";
-        Mockito.when(playlistDAO.getPlaylistByName(validName)).thenReturn(null);
+        Mockito.when(playlistDAO.getPlaylistByName(validName)).thenReturn(Optional.empty());
         boolean validationResult = validator.checkPlaylistName(validName);
 
         Mockito.verify(playlistDAO).getPlaylistByName(validName);
@@ -57,7 +59,7 @@ public class ValidatorTest {
     public void testCheckPlaylistNameShouldReturnFalseWhenNameIsNotUnique() {
         var notUniqueName = "Hybrid Theory (2000)";
         Playlist playlistWithGivenName = Playlist.builder().name(notUniqueName).build();
-        Mockito.when(playlistDAO.getPlaylistByName(notUniqueName)).thenReturn(playlistWithGivenName);
+        Mockito.when(playlistDAO.getPlaylistByName(notUniqueName)).thenReturn(Optional.of(playlistWithGivenName));
         boolean validationResult = validator.checkUniqueness(notUniqueName);
 
         Mockito.verify(playlistDAO).getPlaylistByName(notUniqueName);
@@ -131,7 +133,7 @@ public class ValidatorTest {
     @Test
     public void testCheckUniquenessShouldReturnTrueWhenNameIsUnique() {
         var uniqueName = "Hybrid Theory (2000)";
-        Mockito.when(playlistDAO.getPlaylistByName(uniqueName)).thenReturn(null);
+        Mockito.when(playlistDAO.getPlaylistByName(uniqueName)).thenReturn(Optional.empty());
         boolean validationResult = validator.checkUniqueness(uniqueName);
 
         Mockito.verify(playlistDAO).getPlaylistByName(uniqueName);
@@ -143,7 +145,7 @@ public class ValidatorTest {
     public void testCheckUniquenessShouldReturnFalseWhenNameIsNotUnique() {
         var notUniqueName = "Hybrid Theory";
         Playlist playlistWithGivenName = Playlist.builder().name(notUniqueName).build();
-        Mockito.when(playlistDAO.getPlaylistByName(notUniqueName)).thenReturn(playlistWithGivenName);
+        Mockito.when(playlistDAO.getPlaylistByName(notUniqueName)).thenReturn(Optional.of(playlistWithGivenName));
         boolean validationResult = validator.checkUniqueness(notUniqueName);
 
         Mockito.verify(playlistDAO).getPlaylistByName(notUniqueName);

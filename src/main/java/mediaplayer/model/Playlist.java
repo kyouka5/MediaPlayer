@@ -3,6 +3,8 @@ package mediaplayer.model;
 import com.google.common.base.Objects;
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
+
+import com.google.common.collect.Comparators;
 import lombok.*;
 
 import javax.persistence.*;
@@ -38,6 +40,7 @@ public class Playlist {
     /**
      * The {@link Item}s of a playlist.
      */
+    @ToString.Exclude
     @OneToMany(fetch = FetchType.EAGER, mappedBy = "playlist", orphanRemoval = true)
     private List<Item> contents;
 
@@ -84,14 +87,20 @@ public class Playlist {
      * Shuffles the playlist.
      */
     public void shufflePlaylist() {
-        Collections.shuffle(contents);
+        while (Comparators.isInOrder(contents, getContentsComparator())) {
+            Collections.shuffle(contents);
+        }
     }
 
     /**
      * Restores the original order of the playlist.
      */
     public void unshufflePlaylist() {
-        contents.sort(Comparator.comparingInt(Item::getId));
+        contents.sort(getContentsComparator());
+    }
+
+    private Comparator<Item> getContentsComparator() {
+        return Comparator.comparingInt(Item::getId);
     }
 
     @Override

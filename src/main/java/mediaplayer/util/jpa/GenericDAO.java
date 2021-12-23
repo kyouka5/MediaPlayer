@@ -45,7 +45,7 @@ public abstract class GenericDAO<T> {
 
     @Transactional
     public void remove(T entity) {
-        entityManager.remove(entity);
+        entityManager.remove(entityManager.contains(entity) ? entity : entityManager.merge(entity));
     }
 
     @Transactional

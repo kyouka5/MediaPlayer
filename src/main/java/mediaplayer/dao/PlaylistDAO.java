@@ -5,10 +5,9 @@ import mediaplayer.model.Item;
 import mediaplayer.model.Playlist;
 import mediaplayer.util.jpa.GenericDAO;
 
-//import jakarta.persistence.TypedQuery;
-
 import javax.persistence.TypedQuery;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * DAO class of the {@link Playlist} model.
@@ -40,10 +39,8 @@ public class PlaylistDAO extends GenericDAO<Playlist> {
      */
     @Transactional
     public void updatePlaylistContents(Playlist playlist, List<Item> contents) {
-        if (playlist != null && contents != null) {
-            playlist.getContents().clear();
-            playlist.getContents().addAll(contents);
-        }
+        playlist.getContents().clear();
+        playlist.getContents().addAll(contents);
     }
 
     /**
@@ -52,19 +49,22 @@ public class PlaylistDAO extends GenericDAO<Playlist> {
      * @return the list of {@link Playlist} names
      */
     public List<String> getPlaylistNames() {
-        TypedQuery<String> query = entityManager.createQuery("select p.name from Playlist p", String.class);
-        return query.getResultList();
+        TypedQuery<String> playlistNames = entityManager.createQuery("select p.name from Playlist p", String.class);
+        return playlistNames.getResultList();
     }
 
     /**
      * Gets a {@link Playlist} by its {@code name}.
      *
      * @param name the name of the {@link Playlist}
-     * @return the {@link Playlist} found, or {@code null} if it does not exists
+     * @return optional {@link Playlist} found
      */
-    public Playlist getPlaylistByName(String name) {
-        TypedQuery<Playlist> query = entityManager.createQuery("select p from Playlist p where p.name='" + name + "'", Playlist.class);
-        List<Playlist> result = query.getResultList();
-        return result.isEmpty() ? null : result.get(0);
+    public Optional<Playlist> getPlaylistByName(String name) {
+        return entityManager.createQuery("select p from Playlist p where p.name=:name", Playlist.class)
+                .setParameter("name", name)
+                .setMaxResults(1)
+                .getResultList()
+                .stream()
+                .findFirst();
     }
 }

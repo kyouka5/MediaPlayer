@@ -18,8 +18,8 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.Year;
 import java.util.*;
-import java.util.logging.Level;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import javafx.scene.Node;
 import javafx.scene.control.Alert;
@@ -46,6 +46,8 @@ import mediaplayer.util.Validator;
 
 public class PlaylistController implements Initializable {
 
+    private static final int MOST_PLAYED_ITEMS_MAX_COUNT = 5;
+
     @FXML
     private TextField playlistNameField;
 
@@ -63,29 +65,29 @@ public class PlaylistController implements Initializable {
 
     private Validator validator;
 
-    private static Logger logger = LoggerFactory.getLogger(PlaylistController.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(PlaylistController.class);
 
     /**
      * The currently selected item.
      */
-    private ObjectProperty<String> selectedItem = new SimpleObjectProperty<>();
+    private final ObjectProperty<String> SELECTED_ITEM = new SimpleObjectProperty<>();
 
     /**
      * The index of the currently selected item.
      */
-    private ObjectProperty<Integer> selectedIndex = new SimpleObjectProperty<>();
+    private final ObjectProperty<Integer> SELECTED_INDEX = new SimpleObjectProperty<>();
 
     /**
      * The name of the currently selected playlist.
      */
-    private ObjectProperty<String> selectedPlaylistName = new SimpleObjectProperty<>();
+    private final ObjectProperty<String> SELECTED_PLAYLIST_NAME = new SimpleObjectProperty<>();
 
     public ObjectProperty<String> getSelectedItem() {
-        return selectedItem;
+        return SELECTED_ITEM;
     }
 
     public ObjectProperty<String> getSelectedPlaylistName() {
-        return selectedPlaylistName;
+        return SELECTED_PLAYLIST_NAME;
     }
 
     @Override
@@ -94,7 +96,6 @@ public class PlaylistController implements Initializable {
         playlistDAO = injector.getInstance(PlaylistDAO.class);
         itemDAO = injector.getInstance(ItemDAO.class);
         validator = new Validator(playlistDAO);
-
         removeUnavailableFiles();
         loadPlaylists();
     }
@@ -103,24 +104,36 @@ public class PlaylistController implements Initializable {
      * Checks if there are any files in the database which are no longer available and deletes them.
      */
     private void removeUnavailableFiles() {
-        List<String> pathsNotFound = new ArrayList<>();
         List<String> pathsInDatabase = itemDAO.getAllPaths();
+        List<String> pathsNotFound = findUnavailablePaths(pathsInDatabase);
 
+        if (!pathsNotFound.isEmpty()) {
+            removeUnavailableItems(pathsNotFound);
+            alertUnavailableFiles();
+        }
+    }
+
+    private void removeUnavailableItems(List<String> pathsNotFound) {
+        for (String pathNotFound : pathsNotFound) {
+            itemDAO.removeItemByPath(pathNotFound);
+        }
+    }
+
+    private List<String> findUnavailablePaths(List<String> pathsInDatabase) {
+        List<String> pathsNotFound = new ArrayList<>();
         for (String pathInDatabase : pathsInDatabase) {
-            URI uriOfPath = URI.create(pathInDatabase);
-            String uriPathToString = Paths.get(uriOfPath).toString();
-            Path path = Paths.get(uriPathToString);
+            Path path = convertStringToPath(pathInDatabase);
             if (!path.toFile().exists()) {
                 pathsNotFound.add(pathInDatabase);
             }
         }
+        return pathsNotFound;
+    }
 
-        if (!pathsNotFound.isEmpty()) {
-            for (String pathNotFound : pathsNotFound) {
-                itemDAO.removeItemByPath(pathNotFound);
-            }
-            alertUnavailableFiles();
-        }
+    private Path convertStringToPath(String pathInDatabase) {
+        URI uriOfPath = URI.create(pathInDatabase);
+        String uriPathToString = Paths.get(uriOfPath).toString();
+        return Paths.get(uriPathToString);
     }
 
     /**
@@ -130,7 +143,7 @@ public class PlaylistController implements Initializable {
         Alert alert = new Alert(Alert.AlertType.ERROR);
         alert.setTitle("Error");
         alert.setHeaderText("Some files were not found");
-        alert.setContentText("Some files are missing, hence they got removed from the database. \n");
+        alert.setContentText("Missing files have been removed from the database. \n");
         alert.showAndWait();
     }
 
@@ -138,8 +151,9 @@ public class PlaylistController implements Initializable {
      * Populates the {@link ListView} of playlists with the currently available {@link Playlist}s.
      */
     private void loadPlaylists() {
-        ObservableList<String> playlistNames = FXCollections.observableArrayList(playlistDAO.getPlaylistNames());
-        listViewPlaylist.setItems(playlistNames);
+        List<String> playlistNames = playlistDAO.getPlaylistNames();
+        ObservableList<String> observablePlaylistNames = FXCollections.observableArrayList(playlistNames);
+        listViewPlaylist.setItems(observablePlaylistNames);
     }
 
 
@@ -149,14 +163,15 @@ public class PlaylistController implements Initializable {
             String playlistName = playlistNameField.getText();
             boolean isNameValid = validator.checkPlaylistName(playlistName);
             if (isNameValid) {
-                logger.info("CREATED a new playlist");
-                playlistDAO.persist(new Playlist(playlistName, new ArrayList<>()));
+                LOGGER.info("CREATED a new playlist: {}", playlistName);
+                Playlist emptyPlaylistWithGivenName = new Playlist(playlistName, new ArrayList<>());
+                playlistDAO.persist(emptyPlaylistWithGivenName);
             } else {
                 alertInvalidPlaylistName();
             }
             playlistNameField.setText("");
         } else {
-            logger.warn("The TextField is empty");
+            LOGGER.warn("The playlist text field is empty");
         }
         loadPlaylists();
     }
@@ -164,27 +179,29 @@ public class PlaylistController implements Initializable {
     @FXML
     private void updatePlaylist(ActionEvent event) {
         String selected = listViewPlaylist.getSelectionModel().getSelectedItem();
-        if (selected != null) {
-            if (playlistNameField != null) {
-                String playlistName = playlistNameField.getText();
-                boolean isNameValid = validator.checkPlaylistName(playlistName);
-                if (isNameValid) {
-                    Playlist playlist = playlistDAO.getPlaylistByName(selected);
-                    playlistDAO.updatePlaylistName(playlist, playlistName);
-                    logger.info("Playlist " + selected + " has been RENAMED to " + playlistName);
-                    listViewPlaylist.getItems().set(listViewPlaylist.getSelectionModel().getSelectedIndex(), playlistName);
-                    listViewPlaylist.getSelectionModel().select(-1);
-                    clearItemsAndMostPlayed();
-                } else {
-                    alertInvalidPlaylistName();
-                }
-                playlistNameField.setText("");
-            } else {
-                logger.warn("The TextField is empty");
-            }
-        } else {
-            logger.warn("No playlist has been selected");
+        if (selected == null) {
+            LOGGER.warn("No playlist has been selected");
+            return;
         }
+        if (playlistNameField == null) {
+            LOGGER.warn("The TextField is empty");
+            return;
+        }
+        String playlistName = playlistNameField.getText();
+        boolean isNameValid = validator.checkPlaylistName(playlistName);
+        if (isNameValid) {
+            Optional<Playlist> playlistWithGivenName = playlistDAO.getPlaylistByName(selected);
+            playlistWithGivenName.ifPresent(playlist -> {
+                playlistDAO.updatePlaylistName(playlist, playlistName);
+                LOGGER.info("Playlist %s has been RENAMED to %s".formatted(selected, playlistName));
+                listViewPlaylist.getItems().set(listViewPlaylist.getSelectionModel().getSelectedIndex(), playlistName);
+                listViewPlaylist.getSelectionModel().select(-1);
+                clearItemsAndMostPlayed();
+            });
+        } else {
+            alertInvalidPlaylistName();
+        }
+        playlistNameField.setText("");
     }
 
     /**
@@ -195,82 +212,74 @@ public class PlaylistController implements Initializable {
         alert.setTitle("Error");
         alert.setHeaderText("Invalid playlist name");
         alert.setContentText("Playlist names have to meet the following criteria: \n" +
-                             "- be unique \n" +
-                             "- be between 2 and 50 characters \n" +
-                             "- contain neither leading nor trailing whitespaces");
+                             "- must be unique \n" +
+                             "- must be between 2 and 50 characters \n" +
+                             "- must not contain leading or trailing whitespaces");
         alert.showAndWait();
     }
 
     @FXML
     private void deletePlaylist(ActionEvent event) {
         String selectedPlaylistName = listViewPlaylist.getSelectionModel().getSelectedItem();
-        if (selectedPlaylistName != null) {
-            Playlist playlist = playlistDAO.getPlaylistByName(selectedPlaylistName);
+        if (selectedPlaylistName == null) {
+            LOGGER.warn("No playlist has been selected");
+            return;
+        }
+        Optional<Playlist> playlistWithGivenName = playlistDAO.getPlaylistByName(selectedPlaylistName);
+        playlistWithGivenName.ifPresent(playlist -> {
             playlistDAO.remove(playlist);
-            logger.info("Playlist " + playlist.getName() + " has been REMOVED");
+            LOGGER.info("Playlist has been REMOVED: {}", playlist.getName());
             listViewPlaylist.getItems().remove(listViewPlaylist.getSelectionModel().getSelectedIndex());
             clearItemsAndMostPlayed();
             loadPlaylists();
-        } else {
-            logger.warn("No playlist has been selected");
-        }
-
+        });
     }
 
     @FXML
     private void createItem(ActionEvent event) {
         String selectedPlaylistName = listViewPlaylist.getSelectionModel().getSelectedItem();
-        if (selectedPlaylistName != null) {
-            FileChooser fileChooser = new FileChooser();
-            fileChooser.getExtensionFilters().addAll(new FileChooser.ExtensionFilter("Files", "*mp4", "*.mp3"));
-            List<File> listOfFiles = fileChooser.showOpenMultipleDialog(((Node) event.getSource()).getScene().getWindow());
-            if (listOfFiles != null) {
-                logger.info("New media has been ADDED to the playlist");
-                for (int i = 0; i < listOfFiles.size(); i++) {
-                    if (listOfFiles.get(i).getName().endsWith("mp3")) {
-                        try {
-                            java.util.logging.Logger.getLogger("org.jaudiotagger").setLevel(Level.OFF);
-                            AudioFile audioFile = AudioFileIO.read(listOfFiles.get(i));
-                            Tag tag = audioFile.getTag();
-                            itemDAO.persist(Item.builder()
-                                    .path(listOfFiles.stream().map(e -> e.toURI().toString()).collect(Collectors.toList()).get(i))
-                                    .name(listOfFiles.stream().map(File::getName).collect(Collectors.toList()).get(i))
-                                    .title(tag.getFirst(FieldKey.TITLE))
-                                    .artist(tag.getFirst(FieldKey.ARTIST))
-                                    .album(tag.getFirst(FieldKey.ALBUM))
-                                    .year(tag.getFirst(FieldKey.YEAR).isEmpty() ? Year.of(0) : Year.of(Integer.parseInt(tag.getFirst(FieldKey.YEAR))))
-                                    .genre(tag.getFirst(FieldKey.GENRE))
-                                    .playlist(playlistDAO.getPlaylistByName(selectedPlaylistName))
-                                    .numberOfViews(0)
-                                    .build());
-                        } catch (CannotReadException | ReadOnlyFileException | InvalidAudioFrameException | TagException | IOException e) {
-                            e.printStackTrace();
-                        }
-                    } else {
-                        itemDAO.persist(Item.builder()
-                                .path(listOfFiles.stream().map(e -> e.toURI().toString()).collect(Collectors.toList()).get(i))
-                                .name(listOfFiles.stream().map(File::getName).collect(Collectors.toList()).get(i))
-                                .title(null)
-                                .artist(null)
-                                .album(null)
-                                .year(Year.of(0))
-                                .genre(null)
-                                .playlist(playlistDAO.getPlaylistByName(selectedPlaylistName))
-                                .numberOfViews(0)
-                                .build());
-                    }
-                    itemDAO.flush();
-                }
-                Playlist selectedPlaylist = playlistDAO.getPlaylistByName(selectedPlaylistName);
-                List<Item> items = itemDAO.getItemsByPlaylist(selectedPlaylist);
-                playlistDAO.updatePlaylistContents(selectedPlaylist, items);
-                ObservableList<String> itemNames = FXCollections.observableArrayList(items.stream().map(Item::getName).collect(Collectors.toList()));
-                listViewItem.setItems(itemNames);
-            } else {
-                logger.warn("No media has been selected");
-            }
+        if (selectedPlaylistName == null) {
+            return;
         }
-
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.getExtensionFilters().addAll(new FileChooser.ExtensionFilter("Files", "*mp4", "*.mp3"));
+        List<File> listOfFiles = fileChooser.showOpenMultipleDialog(((Node) event.getSource()).getScene().getWindow());
+        if (listOfFiles != null) {
+            LOGGER.info("New media has been ADDED to the playlist");
+            IntStream.range(0, listOfFiles.size()).forEach(fileIndex -> {
+                Optional<Playlist> playlist = playlistDAO.getPlaylistByName(selectedPlaylistName);
+                Item.ItemBuilder itemToCreate = Item.builder()
+                        .path(listOfFiles.stream().map(e -> e.toURI().toString()).collect(Collectors.toList()).get(fileIndex))
+                        .name(listOfFiles.stream().map(File::getName).collect(Collectors.toList()).get(fileIndex))
+                        .playlist(playlist.orElse(null))
+                        .numberOfViews(0);
+                if (listOfFiles.get(fileIndex).getName().endsWith("mp3")) {
+                    try {
+                        AudioFile audioFile = AudioFileIO.read(listOfFiles.get(fileIndex));
+                        Tag tag = audioFile.getTag();
+                        itemToCreate.title(tag.getFirst(FieldKey.TITLE))
+                                .artist(tag.getFirst(FieldKey.ARTIST))
+                                .album(tag.getFirst(FieldKey.ALBUM))
+                                .year(Year.of(Integer.parseInt(tag.getFirst(FieldKey.YEAR))))
+                                .genre(tag.getFirst(FieldKey.GENRE));
+                    } catch (CannotReadException | ReadOnlyFileException | InvalidAudioFrameException | TagException | IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+                itemDAO.persist(itemToCreate.build());
+                itemDAO.flush();
+            });
+            Optional<Playlist> selectedPlaylist = playlistDAO.getPlaylistByName(selectedPlaylistName);
+            selectedPlaylist.ifPresent(playlist -> {
+                Optional<List<Item>> selectedPlaylistItems = itemDAO.getItemsByPlaylist(playlist);
+                selectedPlaylistItems.ifPresent(items -> {
+                    playlistDAO.updatePlaylistContents(playlist, items);
+                    setObservablePlaylistItems(items);
+                });
+            });
+        } else {
+            LOGGER.warn("No media has been selected");
+        }
     }
 
     @FXML
@@ -279,25 +288,24 @@ public class PlaylistController implements Initializable {
         String selectedItemName = listViewItem.getSelectionModel().getSelectedItem();
         if (selectedPlaylistName != null) {
             if (selectedItemName != null) {
-                Playlist playlist = playlistDAO.getPlaylistByName(selectedPlaylistName);
-                if (playlist.getContents().size() >= 2) {
-                    itemDAO.removeItemFromPlaylistByName(playlist, selectedItemName);
-                    playlist.getContents().clear();
-                    playlist.getContents().addAll(itemDAO.getItemsByPlaylist(playlist));
-                    logger.info("REMOVED " + selectedPlaylistName + " from the playlist");
+                Optional<Playlist> selectedPlaylist = playlistDAO.getPlaylistByName(selectedPlaylistName);
+                selectedPlaylist.ifPresent(playlist -> {
                     listViewItem.getItems().remove(listViewItem.getSelectionModel().getSelectedIndex());
-                    updateMostPlayed();
-                } else {
-                    itemDAO.update(itemDAO.getItemFromPlaylistByName(playlist, selectedItemName));
-                    playlistDAO.remove(playlist);
-                    clearItemsAndMostPlayed();
-                    listViewPlaylist.getItems().remove(listViewPlaylist.getSelectionModel().getSelectedIndex());
-                    listViewPlaylist.getSelectionModel().select(-1);
-                    loadPlaylists();
-                }
+                    if (playlist.getContents().size() > 1) {
+                        Optional<Item> itemToDelete = itemDAO.getItemFromPlaylistByName(playlist, selectedItemName);
+                        itemToDelete.ifPresent(item -> itemDAO.remove(item));
+                        LOGGER.info("REMOVED from the playlist: {}", selectedItemName);
+                        updateMostPlayed();
+                    } else {
+                        playlistDAO.remove(playlist);
+                        clearItemsAndMostPlayed();
+                        listViewPlaylist.getSelectionModel().select(-1);
+                        loadPlaylists();
+                    }
+                });
             }
         } else {
-            logger.warn("No media has been selected");
+            LOGGER.warn("No media has been selected");
         }
     }
 
@@ -306,44 +314,47 @@ public class PlaylistController implements Initializable {
     private void selectPlaylist(MouseEvent event) {
         if (event.getClickCount() == 1) {
             if (listViewPlaylist.getSelectionModel().getSelectedItem() != null) {
-                selectedPlaylistName.setValue(listViewPlaylist.getSelectionModel().getSelectedItem());
-                if (selectedPlaylistName != null) {
-                    logger.info("SELECTED the playlist " + selectedPlaylistName.getValue());
-                    Playlist playlist = playlistDAO.getPlaylistByName(selectedPlaylistName.getValue());
-                    if (!playlist.getContents().isEmpty()) {
-                        showPlaylistContents(playlist);
-                    } else {
+                SELECTED_PLAYLIST_NAME.setValue(listViewPlaylist.getSelectionModel().getSelectedItem());
+                LOGGER.info("SELECTED the playlist {}", SELECTED_PLAYLIST_NAME.getValue());
+                Optional<Playlist> selectedPlaylist = playlistDAO.getPlaylistByName(SELECTED_PLAYLIST_NAME.getValue());
+                selectedPlaylist.ifPresent(playlist -> {
+                    if (playlist.getContents().isEmpty()) {
                         clearItemsAndMostPlayed();
+                    } else {
+                        showPlaylistContents(playlist);
                     }
-                } else {
-                    logger.warn("No media has been selected");
-                }
+                });
             }
         }
     }
 
     private void showPlaylistContents(Playlist playlist) {
         clearItemsAndMostPlayed();
-        List<Item> itemsOfSelectedPlaylist = itemDAO.getItemsByPlaylist(playlist);
-        ObservableList<String> itemNames = FXCollections.observableArrayList(itemsOfSelectedPlaylist
+        Optional<List<Item>> itemsOfSelectedPlaylist = itemDAO.getItemsByPlaylist(playlist);
+        itemsOfSelectedPlaylist.ifPresent(items -> {
+            setObservablePlaylistItems(items);
+            updateMostPlayed();
+        });
+    }
+
+    private void setObservablePlaylistItems(List<Item> items) {
+        ObservableList<String> itemNames = FXCollections.observableArrayList(items
                 .stream().map(Item::getName).collect(Collectors.toList()));
         listViewItem.setItems(itemNames);
-        updateMostPlayed();
     }
 
     @FXML
     private void selectItem(MouseEvent event) {
         if (event.getClickCount() == 2) {
             String selectedItemName = listViewItem.getSelectionModel().getSelectedItem();
-            String selectedMostPlayedName = listViewMostPlayed.getSelectionModel().getSelectedItem();
+            if (selectedItemName == null) {
+                selectedItemName = listViewMostPlayed.getSelectionModel().getSelectedItem();
+            }
             if (selectedItemName != null) {
-                logger.info("SELECTED " + selectedItemName + " from the playlist");
-                select(selectedItemName);
-            } else if (selectedMostPlayedName != null) {
-                logger.info("SELECTED " + selectedMostPlayedName + " from the playlist");
-                select(selectedMostPlayedName);
+                LOGGER.info("SELECTED {} from the playlist", selectedItemName);
+                selectItemByName(selectedItemName);
             } else {
-                logger.warn("No media has been selected");
+                LOGGER.warn("No media has been selected");
             }
         }
     }
@@ -353,15 +364,20 @@ public class PlaylistController implements Initializable {
      *
      * @param selectedItemName the name of the currently selected {@link Item}
      */
-    private void select(String selectedItemName) {
-        Playlist playlist = playlistDAO.getPlaylistByName(listViewPlaylist.getSelectionModel().getSelectedItem());
-        if (itemDAO.getItemsByPlaylist(playlist) != null) {
-            itemDAO.getPathByItemName(selectedItemName);
-            String selectedItemPath = itemDAO.getPathByItemName(selectedItemName);
-            selectedItem.setValue(selectedItemPath);
-            selectedIndex.setValue(listViewItem.getSelectionModel().getSelectedIndex());
-            updateMostPlayed();
-        }
+    private void selectItemByName(String selectedItemName) {
+        Optional<Playlist> selectedPlaylist = playlistDAO.getPlaylistByName(listViewPlaylist.getSelectionModel().getSelectedItem());
+        selectedPlaylist.ifPresent(playlist -> {
+            Optional<List<Item>> itemsOfPlaylist = itemDAO.getItemsByPlaylist(playlist);
+            itemsOfPlaylist.ifPresent(items -> {
+                itemDAO.getPathByItemName(selectedItemName);
+                Optional<String> selectedItemPath = itemDAO.getPathByItemName(selectedItemName);
+                selectedItemPath.ifPresent(itemPath -> {
+                    SELECTED_ITEM.setValue(itemPath);
+                    SELECTED_INDEX.setValue(listViewItem.getSelectionModel().getSelectedIndex());
+                    updateMostPlayed();
+                });
+            });
+        });
     }
 
     private void clearItemsAndMostPlayed() {
@@ -373,9 +389,11 @@ public class PlaylistController implements Initializable {
      * Populates the {@link ListView} of most played items with the top 5 {@link Item}s based on their number of views.
      */
     public void updateMostPlayed() {
-        Playlist playlist = playlistDAO.getPlaylistByName(listViewPlaylist.getSelectionModel().getSelectedItem());
-        ObservableList<String> mostPlayedList = FXCollections.observableArrayList(itemDAO.getMostPlayedFromPlaylist(playlist, 5));
-        listViewMostPlayed.setItems(mostPlayedList);
+        Optional<Playlist> selectedPlaylist = playlistDAO.getPlaylistByName(listViewPlaylist.getSelectionModel().getSelectedItem());
+        selectedPlaylist.ifPresent(playlist -> {
+            ObservableList<String> mostPlayedList = FXCollections.observableArrayList(itemDAO.getMostPlayedFromPlaylist(playlist, MOST_PLAYED_ITEMS_MAX_COUNT));
+            listViewMostPlayed.setItems(mostPlayedList);
+        });
     }
 
 }
